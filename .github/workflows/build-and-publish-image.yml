@@ -1,0 +1,40 @@
+name: Build and Publish Image
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build and Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and Test with Maven
+        run: mvn --batch-mode -Dmaven.test.failure.ignore=true test
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Report Maven Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Maven Test Results
+          path: target/surefire-reports/*.xml
+          reporter: java-junit
+          fail-on-error: true
+
+      - name: Build and Publish Image
+        run: mvn --batch-mode -DskipTests package
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

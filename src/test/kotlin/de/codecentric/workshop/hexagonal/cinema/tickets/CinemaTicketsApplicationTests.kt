@@ -1,6 +1,5 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets
 
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -21,14 +20,14 @@ class CinemaTicketsApplicationTests {
     companion object {
         @Container
         val postgres = PostgreSQLContainer(DockerImageName.parse("postgres:15.3"))
-			.withReuse(true)
+            .withReuse(true)
 
-		@JvmStatic
-		@DynamicPropertySource
-		fun props(registry: DynamicPropertyRegistry) {
-			registry.add("spring.datasource.url") { postgres.jdbcUrl }
-			registry.add("spring.datasource.username") { postgres.username }
-			registry.add("spring.datasource.password") { postgres.password }
-		}
+        @JvmStatic
+        @DynamicPropertySource
+        fun props(registry: DynamicPropertyRegistry) {
+            registry.add("spring.datasource.url") { postgres.jdbcUrl }
+            registry.add("spring.datasource.username") { postgres.username }
+            registry.add("spring.datasource.password") { postgres.password }
+        }
     }
 }
