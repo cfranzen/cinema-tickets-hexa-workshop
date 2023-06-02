@@ -58,13 +58,20 @@ jobs:
     needs: build
 
     steps:
-      - name: "Authenticate to GCP"
-        uses: 'google-github-actions/auth@v1'
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
         with:
           workload_identity_provider: 'projects/336669607852/locations/global/workloadIdentityPools/github-wif-pool/providers/github-wif-provider'
           service_account: 'github-sa@cinema-tickets-hexa-workshop.iam.gserviceaccount.com'
 
-      - name: "Push image to GCP"
+      - name: Push image to GCP
         run: |
           docker buildx imagetools create \
             --tag 'europe-west1-docker.pkg.dev/cinema-tickets-hexa-workshop/docker-images/service:latest' \
