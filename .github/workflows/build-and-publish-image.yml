@@ -65,13 +65,22 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
 
-      - name: Authenticate to GCP
+      - id: auth-gcp
+        name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
+          token_format: 'access_token'
           workload_identity_provider: 'projects/336669607852/locations/global/workloadIdentityPools/github-wif-pool/providers/github-wif-provider'
           service_account: 'github-sa@cinema-tickets-hexa-workshop.iam.gserviceaccount.com'
 
-      - name: Push image to GCP
+      - name: Login to GCR
+        uses: docker/login-action@v2
+        with:
+          registry: gcr.io
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: Push image to GCR
         run: |
           docker buildx imagetools create \
             --tag 'europe-west1-docker.pkg.dev/cinema-tickets-hexa-workshop/docker-images/service:latest' \
