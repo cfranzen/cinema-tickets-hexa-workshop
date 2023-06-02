@@ -67,5 +67,5 @@ jobs:
       - name: "Push image to GCP"
         run: |
           docker buildx imagetools create \
-            --tag europe-west1-docker.pkg.dev/cinema-tickets-hexa-workshop/docker-images/service:latest' \
-            ghcr.io/cfranzen/cinema-tickets-hexa-workshop/service
+            --tag 'europe-west1-docker.pkg.dev/cinema-tickets-hexa-workshop/docker-images/service:latest' \
+            'ghcr.io/cfranzen/cinema-tickets-hexa-workshop/service'
