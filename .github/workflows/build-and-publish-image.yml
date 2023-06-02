@@ -78,7 +78,7 @@ jobs:
         with:
           registry: gcr.io
           username: oauth2accesstoken
-          password: ${{ steps.auth.outputs.access_token }}
+          password: ${{ steps.auth-gcp.outputs.access_token }}
 
       - name: Push image to GCR
         run: |
