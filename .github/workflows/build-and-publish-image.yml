@@ -77,3 +77,5 @@ jobs:
           service: "cinema-tickets-service"
           source: ./
           flags: '--add-cloudsql-instances=cinema-tickets-hexa-workshop:europe-west1:master-postgres-instance'
+          env_vars: |
+            GOOGLE_RUNTIME_VERSION=17
