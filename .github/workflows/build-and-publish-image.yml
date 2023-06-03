@@ -76,4 +76,4 @@ jobs:
           region: "europe-west1"
           service: "cinema-tickets-service"
           source: ./
-          flags: '--add-cloudsql-instances=cinema-tickets-hexa-workshop:europe-west1:master-postgres-instance'
+          flags: '--add-cloudsql-instances=cinema-tickets-hexa-workshop:europe-west1:master-postgres-instance --service-account=cinema-tickets-service-sa@cinema-tickets-hexa-workshop.iam.gserviceaccount.com'
