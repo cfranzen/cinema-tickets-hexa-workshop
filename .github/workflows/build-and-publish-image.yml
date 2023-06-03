@@ -35,8 +35,6 @@ jobs:
 
       - name: Build and Test with Maven
         run: mvn --batch-mode -Dmaven.test.failure.ignore=true test
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Report Maven Test Results
         uses: dorny/test-reporter@v1
@@ -46,11 +44,6 @@ jobs:
           path: target/surefire-reports/*.xml
           reporter: java-junit
           fail-on-error: true
-
-      - name: Build and Publish Image
-        run: mvn --batch-mode -DskipTests package
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
 
   deploy-gcp:
     name: Deploy to GCP
@@ -69,19 +62,15 @@ jobs:
         name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
-          token_format: 'access_token'
           workload_identity_provider: 'projects/336669607852/locations/global/workloadIdentityPools/github-wif-pool/providers/github-wif-provider'
           service_account: 'github-sa@cinema-tickets-hexa-workshop.iam.gserviceaccount.com'
 
-      - name: Login to GCR
-        uses: docker/login-action@v2
+      - id: deploy
+        name: Deploy to Cloud Run
+        uses: 'google-github-actions/deploy-cloudrun@v1'
         with:
-          registry: gcr.io
-          username: oauth2accesstoken
-          password: ${{ steps.auth-gcp.outputs.access_token }}
-
-      - name: Push image to GCR
-        run: |
-          docker buildx imagetools create \
-            --tag 'europe-west1-docker.pkg.dev/cinema-tickets-hexa-workshop/docker-images/service:latest' \
-            'ghcr.io/cfranzen/cinema-tickets-hexa-workshop/service'
+          project_id: "cinema-tickets-hexa-workshop"
+          region: "europe-west1"
+          service: "cinema-tickets-service"
+          source: ./
+          flags: '--add-cloudsql-instances=cinema-tickets-hexa-workshop:europe-west1:master-postgres-instance'
