@@ -73,9 +73,5 @@ jobs:
         uses: 'google-github-actions/deploy-cloudrun@v1'
         with:
           project_id: "cinema-tickets-hexa-workshop"
-          region: "europe-west1"
           service: "cinema-tickets-service"
           source: ./
-          flags: '--add-cloudsql-instances=cinema-tickets-hexa-workshop:europe-west1:master-postgres-instance --service-account=cinema-tickets-service-sa@cinema-tickets-hexa-workshop.iam.gserviceaccount.com'
-          env_vars: |
-            SPRING_PROFILES_ACTIVE=gcp
