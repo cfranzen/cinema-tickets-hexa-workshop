@@ -1,7 +1,5 @@
 resource "google_sql_database_instance" "postgres-db-instance" {
   name                = local.db_instance_name
-  project             = local.project
-  region              = local.region
   database_version    = "POSTGRES_15"
   deletion_protection = true
 
@@ -15,7 +13,6 @@ resource "google_sql_database_instance" "postgres-db-instance" {
 
 resource "google_sql_database" "postgres-database" {
   name       = local.db_name
-  project    = local.project
   instance   = google_sql_database_instance.postgres-db-instance.name
   charset    = "UTF8"
   collation  = "en_US.UTF8"
@@ -29,7 +26,6 @@ resource "google_project_iam_member" "cloud-sql-client-iam" {
 }
 
 resource "google_sql_user" "postgres-user" {
-  project  = local.project
   name     = "postgres"
   password = "postgres"
   instance = google_sql_database_instance.postgres-db-instance.name

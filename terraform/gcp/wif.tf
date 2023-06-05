@@ -1,10 +1,8 @@
 resource "google_iam_workload_identity_pool" "github_pool" {
-  project                   = local.project
   workload_identity_pool_id = "github-wif-pool"
 }
 
 resource "google_iam_workload_identity_pool_provider" "github" {
-  project                            = local.project
   workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.workload_identity_pool_id
   workload_identity_pool_provider_id = "github-wif-provider"
   attribute_mapping                  = {
@@ -19,7 +17,6 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 }
 
 resource "google_service_account" "github_sa" {
-  project    = local.project
   account_id = "github-sa"
 }
 

@@ -8,5 +8,7 @@ terraform {
 }
 
 provider "google" {
-  alias = "default"
+  alias   = "default"
+  project = local.project
+  region  = local.region
 }
