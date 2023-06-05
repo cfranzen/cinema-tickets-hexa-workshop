@@ -24,7 +24,10 @@ resource "google_cloud_run_v2_service" "cinema-tickets-service" {
     containers {
       # We use an empty image here since we refresh that immage using Github action
       image = "us-docker.pkg.dev/cloudrun/container/hello"
-
+      resources {
+        startup_cpu_boost = true
+        cpu_idle          = true
+      }
       env {
         name  = "SPRING_PROFILES_ACTIVE"
         value = "gcp"
@@ -34,7 +37,8 @@ resource "google_cloud_run_v2_service" "cinema-tickets-service" {
         mount_path = "/cloudsql"
       }
     }
-    service_account = google_service_account.service_sa.email
+    execution_environment = "EXECUTION_ENVIRONMENT_GEN2"
+    service_account       = google_service_account.service_sa.email
   }
 
   traffic {
