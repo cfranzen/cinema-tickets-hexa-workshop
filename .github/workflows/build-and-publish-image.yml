@@ -73,5 +73,6 @@ jobs:
         uses: 'google-github-actions/deploy-cloudrun@v1'
         with:
           project_id: "cinema-tickets-hexa-workshop"
+          region: "europe-west1"
           service: "cinema-tickets-service"
           source: ./
