@@ -9,6 +9,7 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieRating
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.ViewedMovie
 import java.time.Instant
+import java.time.OffsetDateTime
 import java.util.*
 
 fun createMovie(
@@ -51,3 +52,12 @@ fun createFavorites(vararg movieIds: Int) = movieIds.map {
         favoriteSince = Instant.now()
     )
 }
+
+data class ErrorResponse(
+    val status: Int,
+    val error: String,
+    val exception: String,
+    val message: String,
+    val path: String,
+    val timestamp: OffsetDateTime
+)

@@ -19,6 +19,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
+import java.time.OffsetDateTime
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -118,4 +119,38 @@ class MovieRecommendationIT(
         )
     }
 
+    @Test
+    fun `throw on unknown customer`() {
+        // Given
+        val customer = customerRepository.save(createCustomer())
+        val invalidCustomerId = customer.id + 1
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/recommendation/{customerId}",
+            HttpMethod.GET,
+            null,
+            ErrorResponse::class.java,
+            mapOf("customerId" to invalidCustomerId)
+        )
+
+        // Then
+        assertTrue(result.statusCode.isError)
+        assertThat(result.body)
+            .usingRecursiveComparison()
+            .ignoringFields("timestamp")
+            .isEqualTo(
+                ErrorResponse(
+                    status = 500,
+                    error = "Internal Server Error",
+                    exception = "java.lang.IllegalArgumentException",
+                    message = "Could not find customer with ID $invalidCustomerId",
+                    path = "/recommendation/$invalidCustomerId",
+                    timestamp = OffsetDateTime.MIN
+                )
+            )
+    }
+
 }
+
+//{"timestamp":"2023-06-06T21:32:39.683+00:00","status":500,"error":"Internal Server Error","exception":"java.lang.IllegalArgumentException","message":"Could not find customer with ID 2","path":"/recommendation/2"}
