@@ -26,7 +26,7 @@ resource "google_project_iam_member" "cloud-sql-client-iam" {
 }
 
 resource "google_sql_user" "postgres-user" {
-  name     = "postgres"
-  password = "postgres"
+  name     = local.db_user
+  password = local.db_password
   instance = google_sql_database_instance.postgres-db-instance.name
 }

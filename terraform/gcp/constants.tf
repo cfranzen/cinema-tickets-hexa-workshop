@@ -8,4 +8,6 @@ locals {
   db_instance_name            = "master-postgres-instance"
   db_name                     = "cinema-tickets"
   db_instance_connection_name = "${local.project}:${local.region}:${google_sql_database_instance.postgres-db-instance.name}"
+  db_user                     = "postgres"
+  db_password                 = "postgres"
 }
