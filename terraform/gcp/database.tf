@@ -2,6 +2,7 @@ resource "google_sql_database_instance" "postgres-db-instance" {
   name                = local.db_instance_name
   database_version    = "POSTGRES_15"
   deletion_protection = true
+  root_password       = "postgres"
 
   settings {
     tier                  = "db-f1-micro"
