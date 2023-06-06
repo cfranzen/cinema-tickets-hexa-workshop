@@ -12,3 +12,7 @@ provider "google" {
   project = local.project
   region  = local.region
 }
+
+data "google_project" "project" {
+  project_id = local.project
+}

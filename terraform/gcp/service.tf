@@ -47,10 +47,27 @@ resource "google_cloud_run_v2_service" "cinema-tickets-service" {
   }
 }
 
-#resource "google_cloud_run_service_iam_binding" "default" {
-#  project  = google_cloud_run_v2_service.cinema-tickets-service.project
-#  location = google_cloud_run_v2_service.cinema-tickets-service.location
-#  service  = google_cloud_run_v2_service.cinema-tickets-service.name
-#  role     = "roles/run.invoker"
-#  members  = ["allUsers"]
-#}
+data "google_tags_tag_key" "allowexternal-tag" {
+  parent     = "organizations/68929296454"
+  short_name = "allowexternal"
+}
+
+data "google_tags_tag_value" "allowexternal-true-tag-value" {
+  parent     = "tagKeys/${data.google_tags_tag_key.allowexternal-tag.name}"
+  short_name = "true"
+}
+
+resource "google_tags_location_tag_binding" "allowexternal-tag-binding" {
+  parent    = "//run.googleapis.com/projects/${data.google_project.project.number}/locations/${local.region}/services/${google_cloud_run_v2_service.cinema-tickets-service.name}"
+  tag_value = "tagValues/${data.google_tags_tag_value.allowexternal-true-tag-value.name}"
+  location  = local.region
+}
+
+resource "google_cloud_run_service_iam_binding" "all-users-run-invoker-iam" {
+  project    = local.project
+  location   = local.region
+  service    = google_cloud_run_v2_service.cinema-tickets-service.name
+  role       = "roles/run.invoker"
+  members    = ["allUsers"]
+  depends_on = [google_tags_location_tag_binding.allowexternal-tag-binding]
+}
