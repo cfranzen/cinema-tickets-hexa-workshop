@@ -24,12 +24,7 @@ fun createMovie(
 )
 
 fun createCustomer(
-    favoriteMovies: List<MovieFavorite> = listOf(
-        MovieFavorite(
-            movieId = 456,
-            favoriteSince = Instant.now()
-        )
-    ),
+    favoriteMovies: List<MovieFavorite> = createFavorites(456),
     viewedMovies: List<ViewedMovie> = listOf(
         ViewedMovie(
             movieId = 123,
@@ -47,5 +42,12 @@ fun createCustomer(
             viewedMovies = viewedMovies,
             favoriteMovies = favoriteMovies
         )
+    )
+}
+
+fun createFavorites(vararg movieIds: Int) = movieIds.map {
+    MovieFavorite(
+        movieId = it,
+        favoriteSince = Instant.now()
     )
 }

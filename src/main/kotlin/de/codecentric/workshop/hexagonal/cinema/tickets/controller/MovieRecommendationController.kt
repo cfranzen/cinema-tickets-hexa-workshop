@@ -2,6 +2,7 @@ package de.codecentric.workshop.hexagonal.cinema.tickets.controller
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Customer
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState
+import de.codecentric.workshop.hexagonal.cinema.tickets.model.Recommendation
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,11 +21,6 @@ class MovieRecommendationController(
 
     @GetMapping("/recommendation/{customerId}")
     fun recommendMoviesToUser(@PathVariable("customerId") customerId: Int): List<Recommendation> {
-        // fetch user, with history of his visited movies and rating or favorites
-        // fetch current movies
-        // calculate which movies the user could like
-        // return json
-
         val customer = customerRepository.findById(customerId)
             .orElseThrow { IllegalArgumentException("Could not find customer with ID $customerId") }
 
@@ -52,16 +48,20 @@ class MovieRecommendationController(
         val movieIds = currentRecommendations.map { it.movieId }.toSet()
         val moviesById = movieRepository.findAllById(movieIds).associateBy { it.id }
 
+        val movieFavoriteCount = customerRepository
+            .findAll()
+            .flatMap { customer -> customer.data.favoriteMovies.map { it.movieId } }
+            .groupingBy { it }
+            .eachCount()
+
         val currentGenres = currentRecommendations.mapNotNull { moviesById[it.movieId]?.genre }.toSet()
         return movieRepository
             .findByGenreIn(currentGenres)
             .filter { !movieIds.contains(it.id) }
+            .sortedBy { movieFavoriteCount.getOrDefault(it.id, 0) }
+            .reversed()
             .take(missingRecommendations)
             .map { Recommendation(it.id, 0.05) }
     }
 }
 
-data class Recommendation(
-    val movieId: Int,
-    val probability: Double
-)

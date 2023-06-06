@@ -1,8 +1,7 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets
 
-import de.codecentric.workshop.hexagonal.cinema.tickets.controller.Recommendation
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieFavorite
+import de.codecentric.workshop.hexagonal.cinema.tickets.model.Recommendation
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -20,7 +19,6 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
-import java.time.Instant
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -61,14 +59,7 @@ class MovieRecommendationIT(
         val customer = customerRepository.save(
             createCustomer(
                 viewedMovies = emptyList(),
-                favoriteMovies = listOf(
-                    MovieFavorite(
-                        movieId = movie1.id, favoriteSince = Instant.now()
-                    ),
-                    MovieFavorite(
-                        movieId = movie2.id, favoriteSince = Instant.now()
-                    )
-                )
+                favoriteMovies = createFavorites(movie1.id, movie2.id)
             )
         )
 
@@ -87,6 +78,43 @@ class MovieRecommendationIT(
             Recommendation(movieId = movie1.id, probability = 0.5),
             Recommendation(movieId = movie2.id, probability = 0.5),
             Recommendation(movieId = movie3.id, probability = 0.05)
+        )
+    }
+
+    @Test
+    fun `recommend movies to customer from favorites, filling up to 3 by equal genre with most likes`() {
+        // Given
+        val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
+        val movie2 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
+        val movie3 = movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
+        val movie4 = movieRepository.save(createMovie(title = "Mission Impossible 2", genre = Genre.ACTION))
+
+        val customer1 = customerRepository.save(
+            createCustomer(
+                viewedMovies = emptyList(),
+                favoriteMovies = createFavorites(movie1.id, movie2.id)
+            )
+        )
+
+        customerRepository.save(createCustomer(viewedMovies = emptyList(), favoriteMovies = createFavorites(movie3.id)))
+        customerRepository.save(createCustomer(viewedMovies = emptyList(), favoriteMovies = createFavorites(movie4.id)))
+        customerRepository.save(createCustomer(viewedMovies = emptyList(), favoriteMovies = createFavorites(movie4.id)))
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/recommendation/{customerId}",
+            HttpMethod.GET,
+            null,
+            object : ParameterizedTypeReference<List<Recommendation>>() {},
+            mapOf("customerId" to customer1.id)
+        )
+
+        // Then
+        assertTrue(result.statusCode.is2xxSuccessful)
+        assertThat(result.body).containsExactlyInAnyOrder(
+            Recommendation(movieId = movie1.id, probability = 0.5),
+            Recommendation(movieId = movie2.id, probability = 0.5),
+            Recommendation(movieId = movie4.id, probability = 0.05)
         )
     }
 
