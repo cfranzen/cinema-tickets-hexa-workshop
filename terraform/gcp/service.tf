@@ -46,3 +46,11 @@ resource "google_cloud_run_v2_service" "cinema-tickets-service" {
     percent = 100
   }
 }
+
+#resource "google_cloud_run_service_iam_binding" "default" {
+#  project  = google_cloud_run_v2_service.cinema-tickets-service.project
+#  location = google_cloud_run_v2_service.cinema-tickets-service.location
+#  service  = google_cloud_run_v2_service.cinema-tickets-service.name
+#  role     = "roles/run.invoker"
+#  members  = ["allUsers"]
+#}
