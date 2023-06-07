@@ -1,5 +1,6 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets
 
+import de.codecentric.workshop.hexagonal.cinema.tickets.controller.MovieWithoutIdDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Customer
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.CustomerData
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
@@ -17,6 +18,18 @@ fun createMovie(
     genre: Genre = Genre.ACTION,
     state: MovieState = MovieState.IN_THEATER
 ): Movie = Movie(
+    title = title,
+    genre = genre,
+    description = "This is some long description how cool this movie is",
+    posterId = UUID.randomUUID().toString(),
+    state = state
+)
+
+fun createMovieDTO(
+    title: String = "This is a new movie",
+    genre: Genre = Genre.ACTION,
+    state: MovieState = MovieState.IN_THEATER
+): MovieWithoutIdDTO = MovieWithoutIdDTO(
     title = title,
     genre = genre,
     description = "This is some long description how cool this movie is",

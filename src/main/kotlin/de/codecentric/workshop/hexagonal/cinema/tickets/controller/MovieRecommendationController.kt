@@ -2,7 +2,6 @@ package de.codecentric.workshop.hexagonal.cinema.tickets.controller
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Customer
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.Recommendation
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,30 +19,29 @@ class MovieRecommendationController(
     }
 
     @GetMapping("/recommendation/{customerId}")
-    fun recommendMoviesToUser(@PathVariable("customerId") customerId: Int): List<Recommendation> {
+    fun recommendMoviesToUser(@PathVariable("customerId") customerId: Int): List<RecommendationDTO> {
         val customer = customerRepository.findById(customerId)
             .orElseThrow { IllegalArgumentException("Could not find customer with ID $customerId") }
 
-        val recommendations = mutableListOf<Recommendation>()
+        val recommendations = mutableListOf<RecommendationDTO>()
         recommendations.addAll(recommendByFavorites(customer))
 
         if (recommendations.size < MIN_RECOMMENDATIONS) {
             recommendations.addAll(fillUpByEqualGenre(recommendations))
 
         }
-
         return recommendations
     }
 
-    private fun recommendByFavorites(customer: Customer): List<Recommendation> {
+    private fun recommendByFavorites(customer: Customer): List<RecommendationDTO> {
         val favoriteMovieIds = customer.data.favoriteMovies.map { it.movieId }
         return movieRepository
             .findAllById(favoriteMovieIds)
             .filter { it.state == MovieState.IN_THEATER }
-            .map { Recommendation(it.id, 0.5) }
+            .map { RecommendationDTO(it.id, 0.5) }
     }
 
-    private fun fillUpByEqualGenre(currentRecommendations: List<Recommendation>): List<Recommendation> {
+    private fun fillUpByEqualGenre(currentRecommendations: List<RecommendationDTO>): List<RecommendationDTO> {
         val missingRecommendations = MIN_RECOMMENDATIONS - currentRecommendations.size
         val movieIds = currentRecommendations.map { it.movieId }.toSet()
         val moviesById = movieRepository.findAllById(movieIds).associateBy { it.id }
@@ -61,7 +59,11 @@ class MovieRecommendationController(
             .sortedBy { movieFavoriteCount.getOrDefault(it.id, 0) }
             .reversed()
             .take(missingRecommendations)
-            .map { Recommendation(it.id, 0.05) }
+            .map { RecommendationDTO(it.id, 0.05) }
     }
 }
 
+data class RecommendationDTO(
+    val movieId: Int,
+    val probability: Double
+)

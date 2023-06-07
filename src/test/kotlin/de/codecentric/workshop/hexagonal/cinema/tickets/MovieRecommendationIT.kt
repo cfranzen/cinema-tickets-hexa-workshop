@@ -1,7 +1,7 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets
 
+import de.codecentric.workshop.hexagonal.cinema.tickets.controller.RecommendationDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.Recommendation
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -69,16 +69,16 @@ class MovieRecommendationIT(
             "/recommendation/{customerId}",
             HttpMethod.GET,
             null,
-            object : ParameterizedTypeReference<List<Recommendation>>() {},
+            object : ParameterizedTypeReference<List<RecommendationDTO>>() {},
             mapOf("customerId" to customer.id)
         )
 
         // Then
         assertTrue(result.statusCode.is2xxSuccessful)
         assertThat(result.body).containsExactlyInAnyOrder(
-            Recommendation(movieId = movie1.id, probability = 0.5),
-            Recommendation(movieId = movie2.id, probability = 0.5),
-            Recommendation(movieId = movie3.id, probability = 0.05)
+            RecommendationDTO(movieId = movie1.id, probability = 0.5),
+            RecommendationDTO(movieId = movie2.id, probability = 0.5),
+            RecommendationDTO(movieId = movie3.id, probability = 0.05)
         )
     }
 
@@ -106,16 +106,16 @@ class MovieRecommendationIT(
             "/recommendation/{customerId}",
             HttpMethod.GET,
             null,
-            object : ParameterizedTypeReference<List<Recommendation>>() {},
+            object : ParameterizedTypeReference<List<RecommendationDTO>>() {},
             mapOf("customerId" to customer1.id)
         )
 
         // Then
         assertTrue(result.statusCode.is2xxSuccessful)
         assertThat(result.body).containsExactlyInAnyOrder(
-            Recommendation(movieId = movie1.id, probability = 0.5),
-            Recommendation(movieId = movie2.id, probability = 0.5),
-            Recommendation(movieId = movie4.id, probability = 0.05)
+            RecommendationDTO(movieId = movie1.id, probability = 0.5),
+            RecommendationDTO(movieId = movie2.id, probability = 0.5),
+            RecommendationDTO(movieId = movie4.id, probability = 0.05)
         )
     }
 
@@ -150,7 +150,4 @@ class MovieRecommendationIT(
                 )
             )
     }
-
 }
-
-//{"timestamp":"2023-06-06T21:32:39.683+00:00","status":500,"error":"Internal Server Error","exception":"java.lang.IllegalArgumentException","message":"Could not find customer with ID 2","path":"/recommendation/2"}

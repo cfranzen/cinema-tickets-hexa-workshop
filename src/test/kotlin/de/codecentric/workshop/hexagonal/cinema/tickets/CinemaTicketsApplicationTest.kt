@@ -11,7 +11,7 @@ import org.testcontainers.utility.DockerImageName
 
 @Testcontainers
 @SpringBootTest
-class CinemaTicketsApplicationTests {
+class CinemaTicketsApplicationTest {
 
     @Test
     fun contextLoads() {

@@ -2,7 +2,6 @@ package de.codecentric.workshop.hexagonal.cinema.tickets.repositories
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.createCustomer
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
@@ -38,11 +37,6 @@ class CustomerRepositoryTest(
             registry.add("spring.datasource.username") { postgres.username }
             registry.add("spring.datasource.password") { postgres.password }
         }
-    }
-
-    @AfterEach
-    fun cleanupData() {
-        customerRepository.deleteAll()
     }
 
     @Test
