@@ -23,6 +23,14 @@ class MovieController(
         return ResponseEntity.ok().body(persistedMovie)
     }
 
+    @GetMapping("/movies/{id}")
+    fun findMovie(@PathVariable("id") movieId: Int): ResponseEntity<Movie> {
+        return movieRepository
+            .findById(movieId)
+            .map { ResponseEntity.ok().body(it) }
+            .orElseGet { ResponseEntity.notFound().build() }
+    }
+
     @GetMapping("/movies/{id}/poster")
     fun getMoviePoster(@PathVariable("id") movieId: Int): ResponseEntity<String> {
         // fetch movie, which is the poster ID/ url
