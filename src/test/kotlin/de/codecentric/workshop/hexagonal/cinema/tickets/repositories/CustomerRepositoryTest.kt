@@ -5,7 +5,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE
+import org.springframework.boot.test.autoconfigure.json.AutoConfigureJson
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.PostgreSQLContainer
@@ -13,8 +17,11 @@ import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
 
-@SpringBootTest
 @Testcontainers
+@DataJdbcTest
+@AutoConfigureJson
+@Import(CustomConverterConfiguration::class)
+@AutoConfigureTestDatabase(replace = NONE)
 class CustomerRepositoryTest(
     @Autowired private val customerRepository: CustomerRepository
 ) {
