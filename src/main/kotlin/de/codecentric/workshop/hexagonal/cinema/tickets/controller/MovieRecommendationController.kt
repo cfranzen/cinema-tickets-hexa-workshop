@@ -4,6 +4,7 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.model.Customer
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
@@ -19,6 +20,7 @@ class MovieRecommendationController(
     }
 
     @GetMapping("/recommendation/{customerId}")
+    @Transactional
     fun recommendMoviesToUser(@PathVariable("customerId") customerId: Int): List<RecommendationDTO> {
         val customer = customerRepository.findById(customerId)
             .orElseThrow { IllegalArgumentException("Could not find customer with ID $customerId") }
