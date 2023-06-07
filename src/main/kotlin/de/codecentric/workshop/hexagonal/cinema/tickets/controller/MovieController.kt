@@ -1,9 +1,14 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets.controller
 
+import com.google.cloud.storage.BlobId
+import com.google.cloud.storage.Storage
+import de.codecentric.workshop.hexagonal.cinema.tickets.config.MoviePostersProperties
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Movie
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -13,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class MovieController(
-    private val movieRepository: MovieRepository
+    private val movieRepository: MovieRepository,
+    private val storage: Storage,
+    private val properties: MoviePostersProperties
 ) {
 
     @PostMapping("/movies")
@@ -32,12 +39,16 @@ class MovieController(
     }
 
     @GetMapping("/movies/{id}/poster")
-    fun getMoviePoster(@PathVariable("id") movieId: Int): ResponseEntity<String> {
-        // fetch movie, which is the poster ID/ url
-        // fetch poster
-        // return poster
+    fun getMoviePoster(@PathVariable("id") movieId: Int): ResponseEntity<Resource> {
+        val movie = movieRepository
+            .findById(movieId)
+            .orElseThrow { IllegalArgumentException("Could not find movie with ID $movieId") }
 
-        return ResponseEntity.ok().body("Hello world $movieId")
+        val poster = storage.get(BlobId.of(properties.bucket.toString(), movie.posterId))
+            ?: return ResponseEntity.notFound().build()
+
+        val content = poster.getContent()
+        return ResponseEntity.ok().body(ByteArrayResource(content))
     }
 }
 
