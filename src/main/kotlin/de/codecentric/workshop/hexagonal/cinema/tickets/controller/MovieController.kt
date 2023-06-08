@@ -44,7 +44,7 @@ class MovieController(
             .findById(movieId)
             .orElseThrow { IllegalArgumentException("Could not find movie with ID $movieId") }
 
-        val poster = storage.get(BlobId.of(properties.bucket.toString(), movie.posterId))
+        val poster = storage.get(BlobId.of(properties.bucket, movie.posterId))
             ?: return ResponseEntity.notFound().build()
 
         val content = poster.getContent()
