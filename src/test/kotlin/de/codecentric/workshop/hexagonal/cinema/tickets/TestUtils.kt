@@ -16,12 +16,13 @@ import java.util.*
 fun createMovie(
     title: String = "This is a new movie",
     genre: Genre = Genre.ACTION,
-    state: MovieState = MovieState.IN_THEATER
-): Movie = Movie(
+    state: MovieState = MovieState.IN_THEATER,
+    posterId: String = UUID.randomUUID().toString()
+) = Movie(
     title = title,
     genre = genre,
     description = "This is some long description how cool this movie is",
-    posterId = UUID.randomUUID().toString(),
+    posterId = posterId,
     state = state
 )
 
@@ -29,7 +30,7 @@ fun createMovieDTO(
     title: String = "This is a new movie",
     genre: Genre = Genre.ACTION,
     state: MovieState = MovieState.IN_THEATER
-): MovieWithoutIdDTO = MovieWithoutIdDTO(
+) = MovieWithoutIdDTO(
     title = title,
     genre = genre,
     description = "This is some long description how cool this movie is",

@@ -19,6 +19,8 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
+import java.nio.file.Files
+import java.nio.file.Path
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -126,5 +128,43 @@ class MovieManagementIT(
 
         // Then
         assertTrue(result.statusCode.isSameCodeAs(HttpStatus.NOT_FOUND))
+    }
+
+    @Test
+    fun `retrieve poster for movie`() {
+        // Given
+        val movie = movieRepository.save(createMovie(posterId = "poster1.jpg"))
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/movies/{id}/poster",
+            HttpMethod.GET,
+            null,
+            ByteArray::class.java,
+            mapOf("id" to movie.id)
+        )
+
+        // Then
+        assertTrue(result.statusCode.is2xxSuccessful)
+        assertThat(result.body).isEqualTo(Files.readAllBytes(Path.of("posters/poster1.jpg")))
+    }
+
+    @Test
+    fun `throw exception while retrieving poster for movie that does not exists`() {
+        // Given
+        val movie = movieRepository.save(createMovie(posterId = "poster1.jpg"))
+        val invalidMovieId = movie.id + 1
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/movies/{id}/poster",
+            HttpMethod.GET,
+            null,
+            ByteArray::class.java,
+            mapOf("id" to invalidMovieId)
+        )
+
+        // Then
+        assertTrue(result.statusCode.isError)
     }
 }
