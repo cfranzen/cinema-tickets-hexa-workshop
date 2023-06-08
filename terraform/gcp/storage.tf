@@ -31,3 +31,9 @@ resource "google_storage_bucket_object" "poster3-bucket-object" {
   source = "../../posters/poster3.jpg"
   bucket = google_storage_bucket.posters-bucket.id
 }
+
+resource "google_storage_bucket_iam_member" "posters-bucket-iam" {
+  bucket = google_storage_bucket.posters-bucket.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.service_sa.email}"
+}
