@@ -36,7 +36,7 @@ class MovieRecommendationController(
     }
 
     private fun recommendByFavorites(customer: Customer): List<RecommendationDTO> {
-        val favoriteMovieIds = customer.data.favoriteMovies.map { it.movieId }
+        val favoriteMovieIds = customer.data.favorites.map { it.movieId }
         return movieRepository
             .findAllById(favoriteMovieIds)
             .filter { it.state == MovieState.IN_THEATER }
@@ -50,7 +50,7 @@ class MovieRecommendationController(
 
         val movieFavoriteCount = customerRepository
             .findAll()
-            .flatMap { customer -> customer.data.favoriteMovies.map { it.movieId } }
+            .flatMap { customer -> customer.data.favorites.map { it.movieId } }
             .groupingBy { it }
             .eachCount()
 

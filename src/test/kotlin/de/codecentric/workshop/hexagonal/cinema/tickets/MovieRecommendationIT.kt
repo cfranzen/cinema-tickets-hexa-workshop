@@ -60,7 +60,7 @@ class MovieRecommendationIT(
         val customer = customerRepository.save(
             createCustomer(
                 viewedMovies = emptyList(),
-                favoriteMovies = createFavorites(movie1.id, movie2.id)
+                favorites = createFavorites(movie1.id, movie2.id)
             )
         )
 
@@ -93,13 +93,13 @@ class MovieRecommendationIT(
         val customer1 = customerRepository.save(
             createCustomer(
                 viewedMovies = emptyList(),
-                favoriteMovies = createFavorites(movie1.id, movie2.id)
+                favorites = createFavorites(movie1.id, movie2.id)
             )
         )
 
-        customerRepository.save(createCustomer(viewedMovies = emptyList(), favoriteMovies = createFavorites(movie3.id)))
-        customerRepository.save(createCustomer(viewedMovies = emptyList(), favoriteMovies = createFavorites(movie4.id)))
-        customerRepository.save(createCustomer(viewedMovies = emptyList(), favoriteMovies = createFavorites(movie4.id)))
+        customerRepository.save(createCustomer(viewedMovies = emptyList(), favorites = createFavorites(movie3.id)))
+        customerRepository.save(createCustomer(viewedMovies = emptyList(), favorites = createFavorites(movie4.id)))
+        customerRepository.save(createCustomer(viewedMovies = emptyList(), favorites = createFavorites(movie4.id)))
 
         // When
         val result = testRestTemplate.exchange(

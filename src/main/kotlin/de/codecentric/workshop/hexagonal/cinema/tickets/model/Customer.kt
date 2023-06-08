@@ -6,13 +6,14 @@ import java.time.Instant
 data class Customer(
     @Id
     val id: Int = 0,
+    val name: String,
     val data: CustomerData
 )
 
 data class CustomerData(
     val registeredSince: Instant,
     val viewedMovies: List<ViewedMovie>,
-    val favoriteMovies: List<MovieFavorite>
+    val favorites: List<MovieFavorite>
 )
 
 data class ViewedMovie(

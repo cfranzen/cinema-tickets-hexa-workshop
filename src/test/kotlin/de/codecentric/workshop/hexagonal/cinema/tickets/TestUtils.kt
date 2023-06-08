@@ -1,5 +1,6 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets
 
+import de.codecentric.workshop.hexagonal.cinema.tickets.controller.CustomerWithoutIdDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.controller.MovieWithoutIdDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Customer
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.CustomerData
@@ -39,7 +40,8 @@ fun createMovieDTO(
 )
 
 fun createCustomer(
-    favoriteMovies: List<MovieFavorite> = createFavorites(456),
+    name: String = "Peter Brown",
+    favorites: List<MovieFavorite> = createFavorites(456),
     viewedMovies: List<ViewedMovie> = listOf(
         ViewedMovie(
             movieId = 123,
@@ -52,10 +54,11 @@ fun createCustomer(
     )
 ): Customer {
     return Customer(
+        name = name,
         data = CustomerData(
             registeredSince = Instant.now(),
             viewedMovies = viewedMovies,
-            favoriteMovies = favoriteMovies
+            favorites = favorites
         )
     )
 }
@@ -64,6 +67,16 @@ fun createFavorites(vararg movieIds: Int) = movieIds.map {
     MovieFavorite(
         movieId = it,
         favoriteSince = Instant.now()
+    )
+}
+
+fun createCustomerDTO(
+    name: String = "Peter Brown",
+    favorites: List<Int> = listOf()
+): CustomerWithoutIdDTO {
+    return CustomerWithoutIdDTO(
+        name = name,
+        favorites = favorites
     )
 }
 
