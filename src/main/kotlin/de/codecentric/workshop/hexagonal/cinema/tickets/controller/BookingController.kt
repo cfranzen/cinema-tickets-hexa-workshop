@@ -71,13 +71,12 @@ class BookingController(
     private fun findPreviewTimeslots(startDate: LocalDate) =
         // Previews are only on Wednesdays in the evening
         listOf(
-            startDate.plusDays(6).atTime(19, 0),
-            startDate.plusDays(13).atTime(19, 0),
+            startDate.plusDays(6).atTime(19, 0)
         )
 
     private fun findNormalTimeslots(startDate: LocalDate) =
         // There are two timeslots for screenings each day
-        (0..13).flatMap {
+        (0..6).flatMap {
             listOf(
                 startDate.plusDays(it.toLong()).atTime(14, 30),
                 startDate.plusDays(it.toLong()).atTime(20, 0),

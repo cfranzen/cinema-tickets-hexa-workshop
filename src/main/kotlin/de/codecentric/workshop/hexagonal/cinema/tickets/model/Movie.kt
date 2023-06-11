@@ -28,5 +28,5 @@ enum class MovieState {
     ANNOUNCED,
     PREVIEW,
     IN_THEATER,
-    LEGACY
+    EXPIRED
 }

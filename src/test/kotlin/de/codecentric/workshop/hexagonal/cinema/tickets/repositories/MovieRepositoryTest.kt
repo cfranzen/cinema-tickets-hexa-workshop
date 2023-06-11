@@ -7,7 +7,7 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre.DRAMA
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre.FANTASY
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState.ANNOUNCED
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState.IN_THEATER
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState.LEGACY
+import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState.EXPIRED
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState.PREVIEW
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -106,6 +106,6 @@ class MovieRepositoryTest(
         assertThat(movieRepository.findByState(ANNOUNCED))
             .containsExactlyInAnyOrder(movie3)
 
-        assertThat(movieRepository.findByState(LEGACY)).isEmpty()
+        assertThat(movieRepository.findByState(EXPIRED)).isEmpty()
     }
 }
