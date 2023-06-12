@@ -10,16 +10,19 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.time.Clock
 import java.time.Instant
 
 @RestController
 class CustomerController(
+    private val clock: Clock,
     private val customerRepository: CustomerRepository
 ) {
 
     @PostMapping("/customers")
     fun createNewCustomer(@RequestBody request: CustomerWithoutIdDTO): ResponseEntity<Customer> {
-        val newCustomer = request.toCustomer()
+        val now = clock.instant()
+        val newCustomer = request.toCustomer(now)
         val persistedCustomer = customerRepository.save(newCustomer)
         return ResponseEntity.ok().body(persistedCustomer)
     }
@@ -38,16 +41,16 @@ data class CustomerWithoutIdDTO(
     val name: String,
     val favorites: List<Int>
 ) {
-    fun toCustomer() = Customer(
+    fun toCustomer(now: Instant) = Customer(
         id = 0,
         name = this.name,
         data = CustomerData(
-            registeredSince = Instant.now(),
+            registeredSince = now,
             viewedMovies = listOf(),
             favorites = this.favorites.map {
                 MovieFavorite(
                     movieId = it,
-                    favoriteSince = Instant.now()
+                    favoriteSince = now
                 )
             }
         )

@@ -70,8 +70,8 @@ class CustomerManagementIT(
         for (i in customersRequest.indices) {
             Assertions.assertThat(customersResponses[i])
                 .usingRecursiveComparison()
-                .ignoringFields("id", "data.registeredSince", "data.favorites.favoriteSince")
-                .isEqualTo(customersRequest[i].toCustomer())
+                .ignoringFields("id")
+                .isEqualTo(customersRequest[i].toCustomer(NOW))
         }
 
         val customerIds = customersResponses.map { it.id }.toSet()

@@ -2,6 +2,7 @@ package de.codecentric.workshop.hexagonal.cinema.tickets
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.controller.CustomerWithoutIdDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.controller.MovieWithoutIdDTO
+import de.codecentric.workshop.hexagonal.cinema.tickets.model.Booking
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Customer
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.CustomerData
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
@@ -11,8 +12,14 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieRating
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.ViewedMovie
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.util.*
+
+val NOW: Instant = Instant.parse("2023-06-11T12:00:00.000Z")
+
+val ZONE: ZoneId = ZoneId.of("Europe/Berlin")
 
 fun createMovie(
     title: String = "This is a new movie",
@@ -45,10 +52,10 @@ fun createCustomer(
     viewedMovies: List<ViewedMovie> = listOf(
         ViewedMovie(
             movieId = 123,
-            viewedAt = Instant.now(),
+            viewedAt = NOW,
             rating = MovieRating(
                 rating = 5,
-                ratedAt = Instant.now()
+                ratedAt = NOW
             )
         )
     )
@@ -56,7 +63,7 @@ fun createCustomer(
     return Customer(
         name = name,
         data = CustomerData(
-            registeredSince = Instant.now(),
+            registeredSince = NOW,
             viewedMovies = viewedMovies,
             favorites = favorites
         )
@@ -66,7 +73,7 @@ fun createCustomer(
 fun createFavorites(vararg movieIds: Int) = movieIds.map {
     MovieFavorite(
         movieId = it,
-        favoriteSince = Instant.now()
+        favoriteSince = NOW
     )
 }
 
@@ -79,6 +86,15 @@ fun createCustomerDTO(
         favorites = favorites
     )
 }
+
+fun createBooking() = Booking(
+    id = 0,
+    customerId = 1,
+    movieId = 2,
+    startTime = LocalDateTime.now(),
+    seats = 3,
+    bookedAt = Instant.now()
+)
 
 data class ErrorResponse(
     val status: Int,

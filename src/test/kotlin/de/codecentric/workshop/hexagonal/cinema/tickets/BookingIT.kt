@@ -1,5 +1,7 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets
 
+import de.codecentric.workshop.hexagonal.cinema.tickets.controller.BookingDTO
+import de.codecentric.workshop.hexagonal.cinema.tickets.model.Booking
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre.ACTION
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState.ANNOUNCED
@@ -7,16 +9,16 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState.EXPIRED
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState.IN_THEATER
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState.PREVIEW
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Screening
+import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.context.annotation.Bean
 import org.springframework.core.ParameterizedTypeReference
+import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -24,24 +26,17 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
-import java.time.Clock
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 class BookingIT(
     @Autowired private val movieRepository: MovieRepository,
+    @Autowired private val customerRepository: CustomerRepository,
     @Autowired private val testRestTemplate: TestRestTemplate
 ) {
 
     companion object {
-
-        private val NOW = Instant.parse("2023-06-11T12:00:00.000Z")
-
-        private val ZONE = ZoneId.of("Europe/Berlin")
-
         @Container
         val postgres = PostgreSQLContainer(DockerImageName.parse("postgres:15.3"))
             .withReuse(true)
@@ -53,12 +48,6 @@ class BookingIT(
             registry.add("spring.datasource.username") { postgres.username }
             registry.add("spring.datasource.password") { postgres.password }
         }
-    }
-
-    @TestConfiguration
-    class TestClockConfig {
-        @Bean
-        fun fixedClock(): Clock = Clock.fixed(NOW, ZONE)
     }
 
     @AfterEach
@@ -172,5 +161,89 @@ class BookingIT(
         // Then
         assertThat(result.statusCode.is2xxSuccessful).isTrue()
         assertThat(result.body).isEmpty()
+    }
+
+    @Test
+    fun `book screening for customer`() {
+        // Given
+        val customer = customerRepository.save(createCustomer())
+        val movie = movieRepository.save(createMovie())
+
+        val request = BookingDTO(
+            customerId = customer.id,
+            screeningId = 1,
+            seats = 3
+        )
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/bookings",
+            HttpMethod.POST,
+            HttpEntity(request),
+            Booking::class.java
+        )
+
+        // Then
+        assertThat(result.statusCode.is2xxSuccessful).isTrue()
+        assertThat(result.body)
+            .usingRecursiveComparison()
+            .ignoringFields("id")
+            .isEqualTo(
+                Booking(
+                    customerId = customer.id,
+                    movieId = movie.id,
+                    startTime = LocalDateTime.parse("2023-06-08T14:30"),
+                    seats = 3,
+                    bookedAt = NOW
+                )
+            )
+    }
+
+    @Test
+    fun `booking fails if screening ID is invalid`() {
+        // Given
+        val customer = customerRepository.save(createCustomer())
+        movieRepository.save(createMovie())
+
+        val request = BookingDTO(
+            customerId = customer.id,
+            screeningId = 12345,
+            seats = 3
+        )
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/bookings",
+            HttpMethod.POST,
+            HttpEntity(request),
+            ErrorResponse::class.java
+        )
+
+        // Then
+        assertThat(result.statusCode.isError).isTrue()
+    }
+
+    @Test
+    fun `booking fails if customer ID is invalid`() {
+        // Given
+        val customer = customerRepository.save(createCustomer())
+        movieRepository.save(createMovie())
+
+        val request = BookingDTO(
+            customerId = customer.id + 1,
+            screeningId = 1,
+            seats = 3
+        )
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/bookings",
+            HttpMethod.POST,
+            HttpEntity(request),
+            ErrorResponse::class.java
+        )
+
+        // Then
+        assertThat(result.statusCode.isError).isTrue()
     }
 }
