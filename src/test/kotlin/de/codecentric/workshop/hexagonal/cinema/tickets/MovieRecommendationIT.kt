@@ -1,5 +1,10 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets
 
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import de.codecentric.workshop.hexagonal.cinema.tickets.controller.RecommendationDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
@@ -11,8 +16,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.PostgreSQLContainer
@@ -21,8 +28,12 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
 import java.time.OffsetDateTime
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = ["customer.datakraken.url=http://localhost:\${wiremock.server.port}"]
+)
 @Testcontainers
+@AutoConfigureWireMock(port = 0)
 class MovieRecommendationIT(
     @Autowired private val customerRepository: CustomerRepository,
     @Autowired private val movieRepository: MovieRepository,
@@ -120,6 +131,88 @@ class MovieRecommendationIT(
     }
 
     @Test
+    fun `use datakraken API for recommendations if customer has no favorites`() {
+        // Given
+        val movie1 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
+        val movie2 = movieRepository.save(createMovie(title = "Titanic", genre = Genre.DRAMA))
+        val movie3 = movieRepository.save(createMovie(title = "Police Academy", genre = Genre.COMEDY))
+        movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
+        movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
+        movieRepository.save(createMovie(title = "Mission Impossible 2", genre = Genre.ACTION))
+
+        val customer = customerRepository.save(
+            createCustomer(
+                viewedMovies = emptyList(),
+                favorites = emptyList()
+            )
+        )
+
+        mockDatakrakenApi(customer.email, Genre.COMEDY, Genre.DRAMA)
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/recommendation/{customerId}",
+            HttpMethod.GET,
+            null,
+            object : ParameterizedTypeReference<List<RecommendationDTO>>() {},
+            mapOf("customerId" to customer.id)
+        )
+
+        // Then
+        assertTrue(result.statusCode.is2xxSuccessful)
+        assertThat(result.body).containsExactlyInAnyOrder(
+            RecommendationDTO(movieId = movie1.id, probability = 0.01),
+            RecommendationDTO(movieId = movie2.id, probability = 0.01),
+            RecommendationDTO(movieId = movie3.id, probability = 0.01)
+        )
+    }
+
+    @Test
+    fun `throw if datakraken API does not provided sufficient results to recommend movies`() {
+        // Given
+        movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
+        movieRepository.save(createMovie(title = "Titanic", genre = Genre.DRAMA))
+        movieRepository.save(createMovie(title = "Police Academy", genre = Genre.COMEDY))
+        movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
+        movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
+        movieRepository.save(createMovie(title = "Mission Impossible 2", genre = Genre.ACTION))
+
+        val customer = customerRepository.save(
+            createCustomer(
+                viewedMovies = emptyList(),
+                favorites = emptyList()
+            )
+        )
+
+        mockDatakrakenApi(customer.email)
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/recommendation/{customerId}",
+            HttpMethod.GET,
+            null,
+            ErrorResponse::class.java,
+            mapOf("customerId" to customer.id)
+        )
+
+        // Then
+        assertTrue(result.statusCode.isError)
+        assertThat(result.body)
+            .usingRecursiveComparison()
+            .ignoringFields("timestamp")
+            .isEqualTo(
+                ErrorResponse(
+                    status = 500,
+                    error = "Internal Server Error",
+                    exception = "java.lang.IllegalStateException",
+                    message = "Could not recommend movies for customer with ID ${customer.id}",
+                    path = "/recommendation/${customer.id}",
+                    timestamp = OffsetDateTime.MIN
+                )
+            )
+    }
+
+    @Test
     fun `throw on unknown customer`() {
         // Given
         val customer = customerRepository.save(createCustomer())
@@ -149,5 +242,23 @@ class MovieRecommendationIT(
                     timestamp = OffsetDateTime.MIN
                 )
             )
+    }
+
+    private fun mockDatakrakenApi(email: String, vararg genres: Genre) {
+        val response = if (genres.isEmpty()) {
+            "[]"
+        } else {
+            """["${genres.joinToString(separator = "\",\"") { it.name }}"]"""
+        }
+
+        stubFor(
+            get(anyUrl())
+                .withQueryParam("email", equalTo(email))
+                .willReturn(
+                    aResponse()
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                        .withBody(response)
+                )
+        )
     }
 }

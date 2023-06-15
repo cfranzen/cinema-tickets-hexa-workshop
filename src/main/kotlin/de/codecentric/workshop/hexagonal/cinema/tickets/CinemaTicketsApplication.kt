@@ -1,5 +1,6 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets
 
+import de.codecentric.workshop.hexagonal.cinema.tickets.config.DatakrakenProperties
 import de.codecentric.workshop.hexagonal.cinema.tickets.config.MoviePostersProperties
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -7,7 +8,8 @@ import org.springframework.boot.runApplication
 
 @SpringBootApplication
 @EnableConfigurationProperties(
-    MoviePostersProperties::class
+    MoviePostersProperties::class,
+    DatakrakenProperties::class
 )
 class CinemaTicketsApplication
 
