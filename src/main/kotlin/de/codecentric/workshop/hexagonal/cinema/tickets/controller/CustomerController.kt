@@ -39,11 +39,13 @@ class CustomerController(
 
 data class CustomerWithoutIdDTO(
     val name: String,
+    val email: String,
     val favorites: List<Int>
 ) {
     fun toCustomer(now: Instant) = Customer(
         id = 0,
         name = this.name,
+        email = this.email,
         data = CustomerData(
             registeredSince = now,
             viewedMovies = listOf(),

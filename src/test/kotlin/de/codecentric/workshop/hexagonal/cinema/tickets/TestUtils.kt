@@ -48,6 +48,7 @@ fun createMovieDTO(
 
 fun createCustomer(
     name: String = "Peter Brown",
+    email: String = "peter.brown@gmail.com",
     favorites: List<MovieFavorite> = createFavorites(456),
     viewedMovies: List<ViewedMovie> = listOf(
         ViewedMovie(
@@ -62,6 +63,7 @@ fun createCustomer(
 ): Customer {
     return Customer(
         name = name,
+        email = email,
         data = CustomerData(
             registeredSince = NOW,
             viewedMovies = viewedMovies,
@@ -79,10 +81,12 @@ fun createFavorites(vararg movieIds: Int) = movieIds.map {
 
 fun createCustomerDTO(
     name: String = "Peter Brown",
+    email: String = "peter.brown@gmail.com",
     favorites: List<Int> = listOf()
 ): CustomerWithoutIdDTO {
     return CustomerWithoutIdDTO(
         name = name,
+        email = email,
         favorites = favorites
     )
 }
