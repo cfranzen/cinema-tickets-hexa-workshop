@@ -1,12 +1,15 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets.repositories
+package de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters
 
-import de.codecentric.workshop.hexagonal.cinema.tickets.createBooking
+import de.codecentric.workshop.hexagonal.cinema.tickets.config.CustomConverterConfiguration
+import de.codecentric.workshop.hexagonal.cinema.tickets.createCustomerEntity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE
+import org.springframework.boot.test.autoconfigure.json.AutoConfigureJson
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.PostgreSQLContainer
@@ -16,9 +19,11 @@ import org.testcontainers.utility.DockerImageName
 
 @Testcontainers
 @DataJdbcTest
+@AutoConfigureJson
+@Import(CustomConverterConfiguration::class)
 @AutoConfigureTestDatabase(replace = NONE)
-class BookingRepositoryTest(
-    @Autowired private val bookingRepository: BookingRepository
+internal class CustomerSpringRepositoryTest(
+    @Autowired private val customerSpringRepository: CustomerSpringRepository
 ) {
 
     companion object {
@@ -36,19 +41,19 @@ class BookingRepositoryTest(
     }
 
     @Test
-    fun `booking id is generated automatically`() {
+    fun `customer id is generated automatically`() {
         // Given
-        val booking = createBooking()
+        val customer = createCustomerEntity()
 
         // When
-        val persistedBooking = bookingRepository.save(booking)
+        val persistedCustomer = customerSpringRepository.save(customer)
 
         // Then
-        assertThat(persistedBooking.id).isGreaterThan(0)
-        assertThat(persistedBooking)
+        assertThat(persistedCustomer.id).isGreaterThan(0)
+        assertThat(persistedCustomer)
             .usingRecursiveComparison()
             .ignoringFields("id")
-            .isEqualTo(booking)
+            .isEqualTo(customer)
     }
 
 

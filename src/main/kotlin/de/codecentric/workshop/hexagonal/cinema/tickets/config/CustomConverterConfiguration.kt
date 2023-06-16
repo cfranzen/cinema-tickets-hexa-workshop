@@ -1,8 +1,8 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets.repositories
+package de.codecentric.workshop.hexagonal.cinema.tickets.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.CustomerData
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntityData
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.convert.converter.Converter
@@ -19,7 +19,7 @@ class CustomConverterConfiguration(
     fun jdbcCustomConversions(): JdbcCustomConversions? {
         return JdbcCustomConversions(
             listOf(
-                CustomerHistoryToStringConverter(objectMapper),
+                CustomerDataToStringConverter(objectMapper),
                 StringToCustomerHistory(objectMapper),
             )
         )
@@ -28,21 +28,21 @@ class CustomConverterConfiguration(
 
 
 @WritingConverter
-class CustomerHistoryToStringConverter(
+internal class CustomerDataToStringConverter(
     private val objectMapper: ObjectMapper
-) : Converter<CustomerData, String> {
+) : Converter<CustomerEntityData, String> {
 
-    override fun convert(source: CustomerData): String {
+    override fun convert(source: CustomerEntityData): String {
         return objectMapper.writeValueAsString(source)
     }
 }
 
 @ReadingConverter
-class StringToCustomerHistory(
+internal class StringToCustomerHistory(
     private val objectMapper: ObjectMapper
-) : Converter<String, CustomerData> {
+) : Converter<String, CustomerEntityData> {
 
-    override fun convert(source: String): CustomerData {
+    override fun convert(source: String): CustomerEntityData {
         return objectMapper.readValue(source)
     }
 }

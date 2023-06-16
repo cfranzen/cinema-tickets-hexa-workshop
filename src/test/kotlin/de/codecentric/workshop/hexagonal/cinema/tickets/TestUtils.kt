@@ -2,15 +2,15 @@ package de.codecentric.workshop.hexagonal.cinema.tickets
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.controller.CustomerWithoutIdDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.controller.MovieWithoutIdDTO
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.Booking
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.Customer
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.CustomerData
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.Movie
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieFavorite
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieRating
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.ViewedMovie
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.BookingEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntityData
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieFavoriteEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieRatingEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.ViewedMovieEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.MovieState
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -21,12 +21,12 @@ val NOW: Instant = Instant.parse("2023-06-11T12:00:00.000Z")
 
 val ZONE: ZoneId = ZoneId.of("Europe/Berlin")
 
-fun createMovie(
+internal fun createMovieEntity(
     title: String = "This is a new movie",
     genre: Genre = Genre.ACTION,
     state: MovieState = MovieState.IN_THEATER,
     posterId: String = UUID.randomUUID().toString()
-) = Movie(
+) = MovieEntity(
     title = title,
     genre = genre,
     description = "This is some long description how cool this movie is",
@@ -34,7 +34,7 @@ fun createMovie(
     state = state
 )
 
-fun createMovieDTO(
+internal fun createMovieDTO(
     title: String = "This is a new movie",
     genre: Genre = Genre.ACTION,
     state: MovieState = MovieState.IN_THEATER
@@ -46,25 +46,25 @@ fun createMovieDTO(
     state = state
 )
 
-fun createCustomer(
+internal fun createCustomerEntity(
     name: String = "Peter Brown",
     email: String = "peter.brown@gmail.com",
-    favorites: List<MovieFavorite> = createFavorites(456),
-    viewedMovies: List<ViewedMovie> = listOf(
-        ViewedMovie(
+    favorites: List<MovieFavoriteEntity> = createFavoritesEntity(456),
+    viewedMovies: List<ViewedMovieEntity> = listOf(
+        ViewedMovieEntity(
             movieId = 123,
             viewedAt = NOW,
-            rating = MovieRating(
+            rating = MovieRatingEntity(
                 rating = 5,
                 ratedAt = NOW
             )
         )
     )
-): Customer {
-    return Customer(
+): CustomerEntity {
+    return CustomerEntity(
         name = name,
         email = email,
-        data = CustomerData(
+        data = CustomerEntityData(
             registeredSince = NOW,
             viewedMovies = viewedMovies,
             favorites = favorites
@@ -72,14 +72,14 @@ fun createCustomer(
     )
 }
 
-fun createFavorites(vararg movieIds: Int) = movieIds.map {
-    MovieFavorite(
+internal fun createFavoritesEntity(vararg movieIds: Int) = movieIds.map {
+    MovieFavoriteEntity(
         movieId = it,
         favoriteSince = NOW
     )
 }
 
-fun createCustomerDTO(
+internal fun createCustomerDTO(
     name: String = "Peter Brown",
     email: String = "peter.brown@gmail.com",
     favorites: List<Int> = listOf()
@@ -91,7 +91,7 @@ fun createCustomerDTO(
     )
 }
 
-fun createBooking() = Booking(
+internal fun createBookingEntity() = BookingEntity(
     id = 0,
     customerId = 1,
     movieId = 2,

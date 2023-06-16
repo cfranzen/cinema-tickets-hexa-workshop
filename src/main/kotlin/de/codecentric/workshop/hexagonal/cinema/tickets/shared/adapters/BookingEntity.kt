@@ -1,10 +1,12 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets.model
+package de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters
 
 import org.springframework.data.annotation.Id
+import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 import java.time.LocalDateTime
 
-data class Booking(
+@Table("booking")
+internal data class BookingEntity(
     @Id
     val id: Int = 0,
     val customerId: Int,

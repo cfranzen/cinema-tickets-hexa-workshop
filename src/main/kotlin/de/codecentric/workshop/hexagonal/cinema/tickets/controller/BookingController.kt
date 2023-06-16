@@ -1,11 +1,11 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets.controller
 
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.Booking
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.BookingEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Screening
-import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.BookingRepository
-import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
-import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.BookingSpringRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerSpringRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieSpringRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.MovieState
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -17,11 +17,11 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 @RestController
-class BookingController(
+internal class BookingController(
     private val clock: Clock,
-    private val movieRepository: MovieRepository,
-    private val bookingRepository: BookingRepository,
-    private val customerRepository: CustomerRepository
+    private val movieSpringRepository: MovieSpringRepository,
+    private val bookingSpringRepository: BookingSpringRepository,
+    private val customerSpringRepository: CustomerSpringRepository
 ) {
 
     companion object {
@@ -29,15 +29,15 @@ class BookingController(
     }
 
     @PostMapping("/bookings")
-    fun createNewBooking(@RequestBody request: BookingDTO): ResponseEntity<Booking> {
+    fun createNewBooking(@RequestBody request: BookingDTO): ResponseEntity<BookingEntity> {
         val screening = listScreenings().firstOrNull { it.id == request.screeningId }
             ?: throw IllegalArgumentException("Could not find screening with id ${request.screeningId}")
 
-        val customer = customerRepository.findById(request.customerId)
+        val customer = customerSpringRepository.findById(request.customerId)
             .orElseThrow { IllegalArgumentException("Could not find customer with id ${request.customerId}") }
 
-        val booking = bookingRepository.save(
-            Booking(
+        val booking = bookingSpringRepository.save(
+            BookingEntity(
                 customerId = customer.id,
                 movieId = screening.movieId,
                 startTime = screening.startTime,
@@ -54,8 +54,8 @@ class BookingController(
     }
 
     private fun listScreenings(): List<Screening> {
-        val moviePreviews = movieRepository.findByState(MovieState.PREVIEW)
-        val moviesInTheater = movieRepository.findByState(MovieState.IN_THEATER)
+        val moviePreviews = movieSpringRepository.findByState(MovieState.PREVIEW)
+        val moviesInTheater = movieSpringRepository.findByState(MovieState.IN_THEATER)
 
         val lastThursday = findLastThursday()
         val previewTimeslots = findPreviewTimeslots(lastThursday)

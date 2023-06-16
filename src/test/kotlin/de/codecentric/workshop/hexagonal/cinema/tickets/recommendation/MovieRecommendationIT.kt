@@ -1,14 +1,18 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets
+package de.codecentric.workshop.hexagonal.cinema.tickets.recommendation
 
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import de.codecentric.workshop.hexagonal.cinema.tickets.controller.RecommendationDTO
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
-import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
-import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.ErrorResponse
+import de.codecentric.workshop.hexagonal.cinema.tickets.createCustomerEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.createFavoritesEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.createMovieEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.adapters.inbound.RecommendationDTO
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerSpringRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieSpringRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -35,9 +39,9 @@ import java.time.OffsetDateTime
 )
 @Testcontainers
 @AutoConfigureWireMock(port = 0)
-class MovieRecommendationIT(
-    @Autowired private val customerRepository: CustomerRepository,
-    @Autowired private val movieRepository: MovieRepository,
+internal class MovieRecommendationIT(
+    @Autowired private val customerSpringRepository: CustomerSpringRepository,
+    @Autowired private val movieSpringRepository: MovieSpringRepository,
     @Autowired private val testRestTemplate: TestRestTemplate
 ) {
 
@@ -57,22 +61,22 @@ class MovieRecommendationIT(
 
     @AfterEach
     fun cleanupData() {
-        customerRepository.deleteAll()
-        movieRepository.deleteAll()
+        customerSpringRepository.deleteAll()
+        movieSpringRepository.deleteAll()
     }
 
     @Test
     fun `recommend movies to customer from favorites, filling up to 3 by equal genre`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
-        val movie2 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
-        val movie3 = movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
-        movieRepository.save(createMovie(title = "Titanic", genre = Genre.DRAMA))
+        val movie1 = movieSpringRepository.save(createMovieEntity(title = "Die Hard", genre = Genre.ACTION))
+        val movie2 = movieSpringRepository.save(createMovieEntity(title = "Ace Ventura", genre = Genre.COMEDY))
+        val movie3 = movieSpringRepository.save(createMovieEntity(title = "Mission Impossible", genre = Genre.ACTION))
+        movieSpringRepository.save(createMovieEntity(title = "Titanic", genre = Genre.DRAMA))
 
-        val customer = customerRepository.save(
-            createCustomer(
+        val customer = customerSpringRepository.save(
+            createCustomerEntity(
                 viewedMovies = emptyList(),
-                favorites = createFavorites(movie1.id, movie2.id)
+                favorites = createFavoritesEntity(movie1.id, movie2.id)
             )
         )
 
@@ -97,14 +101,14 @@ class MovieRecommendationIT(
     @Test
     fun `print customer recommendations as HTML`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
-        val movie2 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
-        val movie3 = movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
+        val movie1 = movieSpringRepository.save(createMovieEntity(title = "Die Hard", genre = Genre.ACTION))
+        val movie2 = movieSpringRepository.save(createMovieEntity(title = "Ace Ventura", genre = Genre.COMEDY))
+        val movie3 = movieSpringRepository.save(createMovieEntity(title = "Mission Impossible", genre = Genre.ACTION))
 
-        val customer = customerRepository.save(
-            createCustomer(
+        val customer = customerSpringRepository.save(
+            createCustomerEntity(
                 viewedMovies = emptyList(),
-                favorites = createFavorites(movie1.id, movie2.id)
+                favorites = createFavoritesEntity(movie1.id, movie2.id)
             )
         )
 
@@ -119,7 +123,8 @@ class MovieRecommendationIT(
 
         // Then
         assertTrue(result.statusCode.is2xxSuccessful)
-        assertThat(result.body).isEqualTo("""
+        assertThat(result.body).isEqualTo(
+            """
           <html>
               <header>                
                   <title>Customer Recommendations</title>
@@ -156,7 +161,7 @@ class MovieRecommendationIT(
     @Test
     fun `throw on unknown customer`() {
         // Given
-        val customer = customerRepository.save(createCustomer())
+        val customer = customerSpringRepository.save(createCustomerEntity())
         val invalidCustomerId = customer.id + 1
 
         // When
@@ -188,15 +193,15 @@ class MovieRecommendationIT(
     @Test
     fun `use datakraken API for recommendations if customer has no favorites`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
-        val movie2 = movieRepository.save(createMovie(title = "Titanic", genre = Genre.DRAMA))
-        val movie3 = movieRepository.save(createMovie(title = "Police Academy", genre = Genre.COMEDY))
-        movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
-        movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
-        movieRepository.save(createMovie(title = "Mission Impossible 2", genre = Genre.ACTION))
+        val movie1 = movieSpringRepository.save(createMovieEntity(title = "Ace Ventura", genre = Genre.COMEDY))
+        val movie2 = movieSpringRepository.save(createMovieEntity(title = "Titanic", genre = Genre.DRAMA))
+        val movie3 = movieSpringRepository.save(createMovieEntity(title = "Police Academy", genre = Genre.COMEDY))
+        movieSpringRepository.save(createMovieEntity(title = "Die Hard", genre = Genre.ACTION))
+        movieSpringRepository.save(createMovieEntity(title = "Mission Impossible", genre = Genre.ACTION))
+        movieSpringRepository.save(createMovieEntity(title = "Mission Impossible 2", genre = Genre.ACTION))
 
-        val customer = customerRepository.save(
-            createCustomer(
+        val customer = customerSpringRepository.save(
+            createCustomerEntity(
                 viewedMovies = emptyList(),
                 favorites = emptyList()
             )
@@ -225,8 +230,8 @@ class MovieRecommendationIT(
     @Test
     fun `throw if datakraken API does not provided sufficient results to recommend movies`() {
         // Given
-        val customer = customerRepository.save(
-            createCustomer(
+        val customer = customerSpringRepository.save(
+            createCustomerEntity(
                 viewedMovies = emptyList(),
                 favorites = emptyList()
             )
@@ -263,8 +268,8 @@ class MovieRecommendationIT(
     @Test
     fun `throw if datakraken API reponds with a server error`() {
         // Given
-        val customer = customerRepository.save(
-            createCustomer(
+        val customer = customerSpringRepository.save(
+            createCustomerEntity(
                 viewedMovies = emptyList(),
                 favorites = emptyList()
             )
@@ -301,8 +306,8 @@ class MovieRecommendationIT(
     @Test
     fun `throw if datakraken API reponds with a client error`() {
         // Given
-        val customer = customerRepository.save(
-            createCustomer(
+        val customer = customerSpringRepository.save(
+            createCustomerEntity(
                 viewedMovies = emptyList(),
                 favorites = emptyList()
             )

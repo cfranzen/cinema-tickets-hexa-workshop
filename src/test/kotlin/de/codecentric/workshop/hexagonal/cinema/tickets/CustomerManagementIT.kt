@@ -1,7 +1,7 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets
 
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.Customer
-import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerSpringRepository
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -21,8 +21,8 @@ import org.testcontainers.utility.DockerImageName
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-class CustomerManagementIT(
-    @Autowired private val customerRepository: CustomerRepository,
+internal class CustomerManagementIT(
+    @Autowired private val customerSpringRepository: CustomerSpringRepository,
     @Autowired private val testRestTemplate: TestRestTemplate
 ) {
 
@@ -42,7 +42,7 @@ class CustomerManagementIT(
 
     @AfterEach
     fun cleanupData() {
-        customerRepository.deleteAll()
+        customerSpringRepository.deleteAll()
     }
 
     @Test
@@ -54,13 +54,13 @@ class CustomerManagementIT(
         val customersRequest = listOf(customer1, customer2, customer3)
 
         // When
-        val customersResponses = mutableListOf<Customer>()
+        val customersResponses = mutableListOf<CustomerEntity>()
         customersRequest.forEach { customer ->
             val result = testRestTemplate.exchange(
                 "/customers",
                 HttpMethod.POST,
                 HttpEntity(customer),
-                Customer::class.java
+                CustomerEntity::class.java
             )
             assertTrue(result.statusCode.is2xxSuccessful)
             result.body?.let { customersResponses.add(it) }
@@ -81,19 +81,19 @@ class CustomerManagementIT(
     @Test
     fun `retrieve existing customer by its ID`() {
         // Given
-        val customer1 = customerRepository.save(createCustomer(name = "Peter Brown", favorites = createFavorites(1, 2)))
-        val customer2 = customerRepository.save(createCustomer(name = "Claudia White", favorites = createFavorites(4)))
-        val customer3 = customerRepository.save(createCustomer(name = "Chi Li", favorites = createFavorites()))
+        val customer1 = customerSpringRepository.save(createCustomerEntity(name = "Peter Brown", favorites = createFavoritesEntity(1, 2)))
+        val customer2 = customerSpringRepository.save(createCustomerEntity(name = "Claudia White", favorites = createFavoritesEntity(4)))
+        val customer3 = customerSpringRepository.save(createCustomerEntity(name = "Chi Li", favorites = createFavoritesEntity()))
         val customersRequest = listOf(customer1, customer2, customer3)
 
         // When
-        val customerResponses = mutableListOf<Customer>()
+        val customerResponses = mutableListOf<CustomerEntity>()
         customersRequest.forEach { customer ->
             val result = testRestTemplate.exchange(
                 "/customers/{id}",
                 HttpMethod.GET,
                 null,
-                Customer::class.java,
+                CustomerEntity::class.java,
                 mapOf("id" to customer.id)
             )
             assertTrue(result.statusCode.is2xxSuccessful)
@@ -111,7 +111,7 @@ class CustomerManagementIT(
     @Test
     fun `throw HTTP 404 NOT FOUND if movie does not exists`() {
         // Given
-        val customer = createCustomer(name = "Chi Li", favorites = createFavorites())
+        val customer = createCustomerEntity(name = "Chi Li", favorites = createFavoritesEntity())
         val invalidMovieId = customer.id + 1
 
         // When
