@@ -62,19 +62,6 @@ ${
         """.trimIndent()
     }
 
-    private fun printRecommendationInfoAsHtml(recommendation: RecommendationDTO): String {
-        val movie = movieRepository.findById(recommendation.movieId)
-            .orElseThrow { IllegalStateException("Could not find movie for ID ${recommendation.movieId}") }
-
-        return """
-            <tr>
-                <td>${movie.id}</td>
-                <td>${movie.title}</td>
-                <td>${recommendation.probability}</td>
-            </tr>
-        """.trimIndent()
-    }
-
     private fun calcRecommendations(customer: Customer): MutableList<RecommendationDTO> {
         val recommendations = mutableListOf<RecommendationDTO>()
         recommendations.addAll(recommendByFavorites(customer))
@@ -154,6 +141,19 @@ ${
         .flatMap { customer -> customer.data.favorites.map { it.movieId } }
         .groupingBy { it }
         .eachCount()
+
+    private fun printRecommendationInfoAsHtml(recommendation: RecommendationDTO): String {
+        val movie = movieRepository.findById(recommendation.movieId)
+            .orElseThrow { IllegalStateException("Could not find movie for ID ${recommendation.movieId}") }
+
+        return """
+            <tr>
+                <td>${movie.id}</td>
+                <td>${movie.title}</td>
+                <td>${recommendation.probability}</td>
+            </tr>
+        """.trimIndent()
+    }
 
 }
 
