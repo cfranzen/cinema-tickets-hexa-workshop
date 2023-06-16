@@ -62,7 +62,7 @@ ${
         """.trimIndent()
     }
 
-    private fun calcRecommendations(customer: Customer): MutableList<RecommendationDTO> {
+    private fun calcRecommendations(customer: Customer): List<RecommendationDTO> {
         val recommendations = mutableListOf<RecommendationDTO>()
         recommendations.addAll(recommendByFavorites(customer))
 
