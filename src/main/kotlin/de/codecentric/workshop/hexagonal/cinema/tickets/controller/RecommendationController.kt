@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.client.RestClientException
 
 @RestController
 class MovieRecommendationController(
@@ -97,13 +98,11 @@ ${
         val movieIds = currentRecommendations.map { it.movieId }.toSet()
         val moviesById = movieRepository.findAllById(movieIds).associateBy { it.id }
 
-        val movieFavoriteCount = calculateMoviesFavoriteCount()
         val currentGenres = currentRecommendations.mapNotNull { moviesById[it.movieId]?.genre }.toSet()
         return movieRepository
             .findByGenreIn(currentGenres)
             .filter { !movieIds.contains(it.id) }
-            .sortedBy { movieFavoriteCount.getOrDefault(it.id, 0) }
-            .reversed()
+            .sortedBy { it.id }
             .take(missingRecommendations)
             .map { RecommendationDTO(it.id, 0.05) }
     }
@@ -113,13 +112,17 @@ ${
         currentRecommendations: List<RecommendationDTO>
     ): List<RecommendationDTO> {
         val restTemplate = restTemplateBuilder.rootUri(datakrakenProperties.url).build()
-        val response = restTemplate.exchange(
-            "/api/?email={email}",
-            HttpMethod.GET,
-            null,
-            object : ParameterizedTypeReference<List<Genre>>() {},
-            mapOf("email" to customer.email)
-        )
+        val response = try {
+            restTemplate.exchange(
+                "/api/?email={email}",
+                HttpMethod.GET,
+                null,
+                object : ParameterizedTypeReference<List<Genre>>() {},
+                mapOf("email" to customer.email)
+            )
+        } catch (e: RestClientException) {
+            return emptyList()
+        }
 
         if (response.statusCode.isError || response.body == null || response.body!!.isEmpty()) {
             return emptyList()
@@ -127,20 +130,12 @@ ${
 
         val suggestedGenres = response.body!!
         val missingRecommendations = MIN_RECOMMENDATIONS - currentRecommendations.size
-        val movieFavoriteCount = calculateMoviesFavoriteCount()
         return movieRepository
             .findByGenreIn(suggestedGenres)
-            .sortedBy { movieFavoriteCount.getOrDefault(it.id, 0) }
-            .reversed()
+            .sortedBy { it.id }
             .take(missingRecommendations)
             .map { RecommendationDTO(it.id, 0.01) }
     }
-
-    private fun calculateMoviesFavoriteCount() = customerRepository
-        .findAll()
-        .flatMap { customer -> customer.data.favorites.map { it.movieId } }
-        .groupingBy { it }
-        .eachCount()
 
     private fun printRecommendationInfoAsHtml(recommendation: RecommendationDTO): String {
         val movie = movieRepository.findById(recommendation.movieId)

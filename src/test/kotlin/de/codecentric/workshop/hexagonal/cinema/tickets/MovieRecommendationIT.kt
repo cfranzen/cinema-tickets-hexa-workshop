@@ -153,42 +153,36 @@ class MovieRecommendationIT(
         )
     }
 
-
     @Test
-    fun `recommend movies to customer from favorites, filling up to 3 by equal genre with most likes`() {
+    fun `throw on unknown customer`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
-        val movie2 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
-        val movie3 = movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
-        val movie4 = movieRepository.save(createMovie(title = "Mission Impossible 2", genre = Genre.ACTION))
-
-        val customer1 = customerRepository.save(
-            createCustomer(
-                viewedMovies = emptyList(),
-                favorites = createFavorites(movie1.id, movie2.id)
-            )
-        )
-
-        customerRepository.save(createCustomer(viewedMovies = emptyList(), favorites = createFavorites(movie3.id)))
-        customerRepository.save(createCustomer(viewedMovies = emptyList(), favorites = createFavorites(movie4.id)))
-        customerRepository.save(createCustomer(viewedMovies = emptyList(), favorites = createFavorites(movie4.id)))
+        val customer = customerRepository.save(createCustomer())
+        val invalidCustomerId = customer.id + 1
 
         // When
         val result = testRestTemplate.exchange(
             "/recommendation/{customerId}",
             HttpMethod.GET,
             null,
-            object : ParameterizedTypeReference<List<RecommendationDTO>>() {},
-            mapOf("customerId" to customer1.id)
+            ErrorResponse::class.java,
+            mapOf("customerId" to invalidCustomerId)
         )
 
         // Then
-        assertTrue(result.statusCode.is2xxSuccessful)
-        assertThat(result.body).containsExactlyInAnyOrder(
-            RecommendationDTO(movieId = movie1.id, probability = 0.5),
-            RecommendationDTO(movieId = movie2.id, probability = 0.5),
-            RecommendationDTO(movieId = movie4.id, probability = 0.05)
-        )
+        assertTrue(result.statusCode.isError)
+        assertThat(result.body)
+            .usingRecursiveComparison()
+            .ignoringFields("timestamp")
+            .isEqualTo(
+                ErrorResponse(
+                    status = 500,
+                    error = "Internal Server Error",
+                    exception = "java.lang.IllegalArgumentException",
+                    message = "Could not find customer with ID $invalidCustomerId",
+                    path = "/recommendation/$invalidCustomerId",
+                    timestamp = OffsetDateTime.MIN
+                )
+            )
     }
 
     @Test
@@ -267,38 +261,6 @@ class MovieRecommendationIT(
     }
 
     @Test
-    fun `throw on unknown customer`() {
-        // Given
-        val customer = customerRepository.save(createCustomer())
-        val invalidCustomerId = customer.id + 1
-
-        // When
-        val result = testRestTemplate.exchange(
-            "/recommendation/{customerId}",
-            HttpMethod.GET,
-            null,
-            ErrorResponse::class.java,
-            mapOf("customerId" to invalidCustomerId)
-        )
-
-        // Then
-        assertTrue(result.statusCode.isError)
-        assertThat(result.body)
-            .usingRecursiveComparison()
-            .ignoringFields("timestamp")
-            .isEqualTo(
-                ErrorResponse(
-                    status = 500,
-                    error = "Internal Server Error",
-                    exception = "java.lang.IllegalArgumentException",
-                    message = "Could not find customer with ID $invalidCustomerId",
-                    path = "/recommendation/$invalidCustomerId",
-                    timestamp = OffsetDateTime.MIN
-                )
-            )
-    }
-
-    @Test
     fun `throw if datakraken API reponds with a server error`() {
         // Given
         val customer = customerRepository.save(
@@ -328,8 +290,8 @@ class MovieRecommendationIT(
                 ErrorResponse(
                     status = 500,
                     error = "Internal Server Error",
-                    exception = "org.springframework.web.client.HttpServerErrorException\$InternalServerError",
-                    message = "500 Server Error: [no body]",
+                    exception = "java.lang.IllegalStateException",
+                    message = "Could not recommend movies for customer with ID ${customer.id}",
                     path = "/recommendation/${customer.id}",
                     timestamp = OffsetDateTime.MIN
                 )
@@ -366,8 +328,8 @@ class MovieRecommendationIT(
                 ErrorResponse(
                     status = 500,
                     error = "Internal Server Error",
-                    exception = "org.springframework.web.client.HttpClientErrorException\$BadRequest",
-                    message = "400 Bad Request: [no body]",
+                    exception = "java.lang.IllegalStateException",
+                    message = "Could not recommend movies for customer with ID ${customer.id}",
                     path = "/recommendation/${customer.id}",
                     timestamp = OffsetDateTime.MIN
                 )
