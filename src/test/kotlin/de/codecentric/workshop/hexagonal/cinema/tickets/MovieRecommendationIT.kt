@@ -19,6 +19,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -170,13 +171,6 @@ class MovieRecommendationIT(
     @Test
     fun `throw if datakraken API does not provided sufficient results to recommend movies`() {
         // Given
-        movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
-        movieRepository.save(createMovie(title = "Titanic", genre = Genre.DRAMA))
-        movieRepository.save(createMovie(title = "Police Academy", genre = Genre.COMEDY))
-        movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
-        movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
-        movieRepository.save(createMovie(title = "Mission Impossible 2", genre = Genre.ACTION))
-
         val customer = customerRepository.save(
             createCustomer(
                 viewedMovies = emptyList(),
@@ -244,6 +238,82 @@ class MovieRecommendationIT(
             )
     }
 
+    @Test
+    fun `throw if datakraken API reponds with a server error`() {
+        // Given
+        val customer = customerRepository.save(
+            createCustomer(
+                viewedMovies = emptyList(),
+                favorites = emptyList()
+            )
+        )
+
+        mockDatakrakenApiWithErrorReponse(HttpStatus.INTERNAL_SERVER_ERROR.value())
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/recommendation/{customerId}",
+            HttpMethod.GET,
+            null,
+            ErrorResponse::class.java,
+            mapOf("customerId" to customer.id)
+        )
+
+        // Then
+        assertTrue(result.statusCode.isError)
+        assertThat(result.body)
+            .usingRecursiveComparison()
+            .ignoringFields("timestamp")
+            .isEqualTo(
+                ErrorResponse(
+                    status = 500,
+                    error = "Internal Server Error",
+                    exception = "org.springframework.web.client.HttpServerErrorException\$InternalServerError",
+                    message = "500 Server Error: [no body]",
+                    path = "/recommendation/${customer.id}",
+                    timestamp = OffsetDateTime.MIN
+                )
+            )
+    }
+
+    @Test
+    fun `throw if datakraken API reponds with a client error`() {
+        // Given
+        val customer = customerRepository.save(
+            createCustomer(
+                viewedMovies = emptyList(),
+                favorites = emptyList()
+            )
+        )
+
+        mockDatakrakenApiWithErrorReponse(HttpStatus.BAD_REQUEST.value())
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/recommendation/{customerId}",
+            HttpMethod.GET,
+            null,
+            ErrorResponse::class.java,
+            mapOf("customerId" to customer.id)
+        )
+
+        // Then
+        assertTrue(result.statusCode.isError)
+        assertThat(result.body)
+            .usingRecursiveComparison()
+            .ignoringFields("timestamp")
+            .isEqualTo(
+                ErrorResponse(
+                    status = 500,
+                    error = "Internal Server Error",
+                    exception = "org.springframework.web.client.HttpClientErrorException\$BadRequest",
+                    message = "400 Bad Request: [no body]",
+                    path = "/recommendation/${customer.id}",
+                    timestamp = OffsetDateTime.MIN
+                )
+            )
+    }
+
     private fun mockDatakrakenApi(email: String, vararg genres: Genre) {
         val response = if (genres.isEmpty()) {
             "[]"
@@ -258,6 +328,16 @@ class MovieRecommendationIT(
                     aResponse()
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                         .withBody(response)
+                )
+        )
+    }
+
+    private fun mockDatakrakenApiWithErrorReponse(statusCode: Int) {
+        stubFor(
+            get(anyUrl())
+                .willReturn(
+                    aResponse()
+                        .withStatus(statusCode)
                 )
         )
     }
