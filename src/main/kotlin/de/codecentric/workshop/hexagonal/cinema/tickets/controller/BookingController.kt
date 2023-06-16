@@ -5,7 +5,7 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Screening
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.BookingRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
-import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.SpringMovieRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -19,7 +19,7 @@ import java.time.ZoneId
 @RestController
 class BookingController(
     private val clock: Clock,
-    private val movieRepository: MovieRepository,
+    private val springMovieRepository: SpringMovieRepository,
     private val bookingRepository: BookingRepository,
     private val customerRepository: CustomerRepository
 ) {
@@ -54,8 +54,8 @@ class BookingController(
     }
 
     private fun listScreenings(): List<Screening> {
-        val moviePreviews = movieRepository.findByState(MovieState.PREVIEW)
-        val moviesInTheater = movieRepository.findByState(MovieState.IN_THEATER)
+        val moviePreviews = springMovieRepository.findByState(MovieState.PREVIEW)
+        val moviesInTheater = springMovieRepository.findByState(MovieState.IN_THEATER)
 
         val lastThursday = findLastThursday()
         val previewTimeslots = findPreviewTimeslots(lastThursday)

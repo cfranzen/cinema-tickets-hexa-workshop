@@ -5,10 +5,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import de.codecentric.workshop.hexagonal.cinema.tickets.controller.RecommendationDTO
+import de.codecentric.workshop.hexagonal.cinema.tickets.recommendations.adapters.inbound.RecommendationDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
-import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.SpringMovieRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -37,7 +37,7 @@ import java.time.OffsetDateTime
 @AutoConfigureWireMock(port = 0)
 class MovieRecommendationIT(
     @Autowired private val customerRepository: CustomerRepository,
-    @Autowired private val movieRepository: MovieRepository,
+    @Autowired private val springMovieRepository: SpringMovieRepository,
     @Autowired private val testRestTemplate: TestRestTemplate
 ) {
 
@@ -58,16 +58,16 @@ class MovieRecommendationIT(
     @AfterEach
     fun cleanupData() {
         customerRepository.deleteAll()
-        movieRepository.deleteAll()
+        springMovieRepository.deleteAll()
     }
 
     @Test
     fun `recommend movies to customer from favorites, filling up to 3 by equal genre`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
-        val movie2 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
-        val movie3 = movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
-        movieRepository.save(createMovie(title = "Titanic", genre = Genre.DRAMA))
+        val movie1 = springMovieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
+        val movie2 = springMovieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
+        val movie3 = springMovieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
+        springMovieRepository.save(createMovie(title = "Titanic", genre = Genre.DRAMA))
 
         val customer = customerRepository.save(
             createCustomer(
@@ -97,9 +97,9 @@ class MovieRecommendationIT(
     @Test
     fun `print customer recommendations as HTML`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
-        val movie2 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
-        val movie3 = movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
+        val movie1 = springMovieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
+        val movie2 = springMovieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
+        val movie3 = springMovieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
 
         val customer = customerRepository.save(
             createCustomer(
@@ -157,10 +157,10 @@ class MovieRecommendationIT(
     @Test
     fun `recommend movies to customer from favorites, filling up to 3 by equal genre with most likes`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
-        val movie2 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
-        val movie3 = movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
-        val movie4 = movieRepository.save(createMovie(title = "Mission Impossible 2", genre = Genre.ACTION))
+        val movie1 = springMovieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
+        val movie2 = springMovieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
+        val movie3 = springMovieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
+        val movie4 = springMovieRepository.save(createMovie(title = "Mission Impossible 2", genre = Genre.ACTION))
 
         val customer1 = customerRepository.save(
             createCustomer(
@@ -194,12 +194,12 @@ class MovieRecommendationIT(
     @Test
     fun `use datakraken API for recommendations if customer has no favorites`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
-        val movie2 = movieRepository.save(createMovie(title = "Titanic", genre = Genre.DRAMA))
-        val movie3 = movieRepository.save(createMovie(title = "Police Academy", genre = Genre.COMEDY))
-        movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
-        movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
-        movieRepository.save(createMovie(title = "Mission Impossible 2", genre = Genre.ACTION))
+        val movie1 = springMovieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
+        val movie2 = springMovieRepository.save(createMovie(title = "Titanic", genre = Genre.DRAMA))
+        val movie3 = springMovieRepository.save(createMovie(title = "Police Academy", genre = Genre.COMEDY))
+        springMovieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
+        springMovieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
+        springMovieRepository.save(createMovie(title = "Mission Impossible 2", genre = Genre.ACTION))
 
         val customer = customerRepository.save(
             createCustomer(

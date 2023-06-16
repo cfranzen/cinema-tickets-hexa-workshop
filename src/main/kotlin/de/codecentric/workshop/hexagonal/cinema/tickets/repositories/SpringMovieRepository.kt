@@ -7,7 +7,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface MovieRepository : CrudRepository<Movie, Int> {
+interface SpringMovieRepository : CrudRepository<Movie, Int> {
 
     fun findByGenreIn(genres: Collection<Genre>): Iterable<Movie>
 

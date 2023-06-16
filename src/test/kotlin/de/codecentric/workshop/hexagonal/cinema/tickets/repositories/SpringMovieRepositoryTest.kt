@@ -25,8 +25,8 @@ import org.testcontainers.utility.DockerImageName
 @Testcontainers
 @DataJdbcTest
 @AutoConfigureTestDatabase(replace = NONE)
-class MovieRepositoryTest(
-    @Autowired private val movieRepository: MovieRepository
+class SpringMovieRepositoryTest(
+    @Autowired private val springMovieRepository: SpringMovieRepository
 ) {
 
     companion object {
@@ -49,7 +49,7 @@ class MovieRepositoryTest(
         val movie = createMovie()
 
         // When
-        val persistedMovie = movieRepository.save(movie)
+        val persistedMovie = springMovieRepository.save(movie)
 
         // Then
         assertThat(persistedMovie.id).isGreaterThan(0)
@@ -62,50 +62,50 @@ class MovieRepositoryTest(
     @Test
     fun `find movies by set of genres`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(genre = ACTION))
-        val movie2 = movieRepository.save(createMovie(genre = COMEDY))
-        val movie3 = movieRepository.save(createMovie(genre = DRAMA))
-        val movie4 = movieRepository.save(createMovie(genre = ACTION))
-        val movie5 = movieRepository.save(createMovie(genre = DRAMA))
+        val movie1 = springMovieRepository.save(createMovie(genre = ACTION))
+        val movie2 = springMovieRepository.save(createMovie(genre = COMEDY))
+        val movie3 = springMovieRepository.save(createMovie(genre = DRAMA))
+        val movie4 = springMovieRepository.save(createMovie(genre = ACTION))
+        val movie5 = springMovieRepository.save(createMovie(genre = DRAMA))
 
         // When / Then
-        assertThat(movieRepository.findByGenreIn(listOf(ACTION)))
+        assertThat(springMovieRepository.findByGenreIn(listOf(ACTION)))
             .containsExactlyInAnyOrder(movie1, movie4)
 
-        assertThat(movieRepository.findByGenreIn(listOf(ACTION, FANTASY)))
+        assertThat(springMovieRepository.findByGenreIn(listOf(ACTION, FANTASY)))
             .containsExactlyInAnyOrder(movie1, movie4)
 
-        assertThat(movieRepository.findByGenreIn(listOf(ACTION, COMEDY)))
+        assertThat(springMovieRepository.findByGenreIn(listOf(ACTION, COMEDY)))
             .containsExactlyInAnyOrder(movie1, movie2, movie4)
 
-        assertThat(movieRepository.findByGenreIn(listOf(DRAMA, COMEDY)))
+        assertThat(springMovieRepository.findByGenreIn(listOf(DRAMA, COMEDY)))
             .containsExactlyInAnyOrder(movie2, movie3, movie5)
 
-        assertThat(movieRepository.findByGenreIn(listOf(DRAMA, ACTION)))
+        assertThat(springMovieRepository.findByGenreIn(listOf(DRAMA, ACTION)))
             .containsExactlyInAnyOrder(movie1, movie3, movie4, movie5)
 
-        assertThat(movieRepository.findByGenreIn(listOf(DRAMA, ACTION, COMEDY, FANTASY)))
+        assertThat(springMovieRepository.findByGenreIn(listOf(DRAMA, ACTION, COMEDY, FANTASY)))
             .containsExactlyInAnyOrder(movie1, movie2, movie3, movie4, movie5)
     }
 
     @Test
     fun `find movies by their state`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(state = IN_THEATER))
-        val movie2 = movieRepository.save(createMovie(state = PREVIEW))
-        val movie3 = movieRepository.save(createMovie(state = ANNOUNCED))
-        val movie4 = movieRepository.save(createMovie(state = IN_THEATER))
+        val movie1 = springMovieRepository.save(createMovie(state = IN_THEATER))
+        val movie2 = springMovieRepository.save(createMovie(state = PREVIEW))
+        val movie3 = springMovieRepository.save(createMovie(state = ANNOUNCED))
+        val movie4 = springMovieRepository.save(createMovie(state = IN_THEATER))
 
         // When / Then
-        assertThat(movieRepository.findByState(IN_THEATER))
+        assertThat(springMovieRepository.findByState(IN_THEATER))
             .containsExactlyInAnyOrder(movie1, movie4)
 
-        assertThat(movieRepository.findByState(PREVIEW))
+        assertThat(springMovieRepository.findByState(PREVIEW))
             .containsExactlyInAnyOrder(movie2)
 
-        assertThat(movieRepository.findByState(ANNOUNCED))
+        assertThat(springMovieRepository.findByState(ANNOUNCED))
             .containsExactlyInAnyOrder(movie3)
 
-        assertThat(movieRepository.findByState(EXPIRED)).isEmpty()
+        assertThat(springMovieRepository.findByState(EXPIRED)).isEmpty()
     }
 }
