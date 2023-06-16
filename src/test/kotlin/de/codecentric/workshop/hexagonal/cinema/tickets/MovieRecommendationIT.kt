@@ -95,6 +95,66 @@ class MovieRecommendationIT(
     }
 
     @Test
+    fun `print customer recommendations as HTML`() {
+        // Given
+        val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
+        val movie2 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
+        val movie3 = movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
+
+        val customer = customerRepository.save(
+            createCustomer(
+                viewedMovies = emptyList(),
+                favorites = createFavorites(movie1.id, movie2.id)
+            )
+        )
+
+        // When
+        val result = testRestTemplate.exchange(
+            "/recommendation/{customerId}/html",
+            HttpMethod.GET,
+            null,
+            String::class.java,
+            mapOf("customerId" to customer.id)
+        )
+
+        // Then
+        assertTrue(result.statusCode.is2xxSuccessful)
+        assertThat(result.body).isEqualTo("""
+          <html>
+              <header>                
+                  <title>Customer Recommendations</title>
+              </header>
+              <body>
+              <table>
+                  <th>
+                      <td>Movie ID</td>
+                      <td>Title</td>
+                      <td>Probability</td>
+                  </th>
+                  <tr>
+                      <td>${movie1.id}</td>
+                      <td>${movie1.title}</td>
+                      <td>0.5</td>
+                  </tr>
+                  <tr>
+                      <td>${movie2.id}</td>
+                      <td>${movie2.title}</td>
+                      <td>0.5</td>
+                  </tr>
+                  <tr>
+                      <td>${movie3.id}</td>
+                      <td>${movie3.title}</td>
+                      <td>0.05</td>
+                  </tr>
+              </table>
+              </body>
+          </html>
+        """.trimIndent()
+        )
+    }
+
+
+    @Test
     fun `recommend movies to customer from favorites, filling up to 3 by equal genre with most likes`() {
         // Given
         val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))

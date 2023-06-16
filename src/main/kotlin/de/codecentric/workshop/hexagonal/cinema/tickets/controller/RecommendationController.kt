@@ -9,6 +9,7 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieReposi
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -29,9 +30,52 @@ class MovieRecommendationController(
     @GetMapping("/recommendation/{customerId}")
     @Transactional
     fun recommendMoviesToUser(@PathVariable("customerId") customerId: Int): List<RecommendationDTO> {
-        val customer = customerRepository.findById(customerId)
-            .orElseThrow { IllegalArgumentException("Could not find customer with ID $customerId") }
+        val customer = findCustomerById(customerId)
+        return calcRecommendations(customer)
+    }
 
+    @GetMapping("/recommendation/{customerId}/html", produces = [MediaType.TEXT_HTML_VALUE])
+    @Transactional
+    fun recommendMoviesToUserInHtml(@PathVariable("customerId") customerId: Int): String {
+        val customer = findCustomerById(customerId)
+        val recommendations = calcRecommendations(customer)
+
+        return """
+            <html>
+                <header>                
+                    <title>Customer Recommendations</title>
+                </header>
+                <body>
+                <table>
+                    <th>
+                        <td>Movie ID</td>
+                        <td>Title</td>
+                        <td>Probability</td>
+                    </th>
+${
+            recommendations.map { printRecommendationInfoAsHtml(it) }.joinToString(separator = "\n")
+                .prependIndent("                    ")
+        }
+                </table>
+                </body>
+            </html>
+        """.trimIndent()
+    }
+
+    private fun printRecommendationInfoAsHtml(recommendation: RecommendationDTO): String {
+        val movie = movieRepository.findById(recommendation.movieId)
+            .orElseThrow { IllegalStateException("Could not find movie for ID ${recommendation.movieId}") }
+
+        return """
+            <tr>
+                <td>${movie.id}</td>
+                <td>${movie.title}</td>
+                <td>${recommendation.probability}</td>
+            </tr>
+        """.trimIndent()
+    }
+
+    private fun calcRecommendations(customer: Customer): MutableList<RecommendationDTO> {
         val recommendations = mutableListOf<RecommendationDTO>()
         recommendations.addAll(recommendByFavorites(customer))
 
@@ -46,9 +90,12 @@ class MovieRecommendationController(
         if (recommendations.size < MIN_RECOMMENDATIONS) {
             throw IllegalStateException("Could not recommend movies for customer with ID ${customer.id}")
         }
-
         return recommendations
     }
+
+    private fun findCustomerById(customerId: Int): Customer =
+        customerRepository.findById(customerId)
+            .orElseThrow { IllegalArgumentException("Could not find customer with ID $customerId") }
 
     private fun recommendByFavorites(customer: Customer): List<RecommendationDTO> {
         val favoriteMovieIds = customer.data.favorites.map { it.movieId }
