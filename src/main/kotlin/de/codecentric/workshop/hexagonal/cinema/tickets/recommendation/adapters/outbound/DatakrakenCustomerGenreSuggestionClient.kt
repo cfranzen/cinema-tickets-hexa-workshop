@@ -1,6 +1,6 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.adapters.outbound
 
-import de.codecentric.workshop.hexagonal.cinema.tickets.config.DatakrakenProperties
+import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.config.DatakrakenProperties
 import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.Customer
 import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.ports.CustomerGenreSuggestionClient
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre

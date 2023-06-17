@@ -1,4 +1,4 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets.model
+package de.codecentric.workshop.hexagonal.cinema.tickets.booking.domain
 
 import java.time.LocalDateTime
 

@@ -1,4 +1,4 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets.config
+package de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.bind.ConstructorBinding

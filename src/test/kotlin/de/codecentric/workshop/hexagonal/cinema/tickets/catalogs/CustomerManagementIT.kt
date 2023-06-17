@@ -1,7 +1,11 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets
+package de.codecentric.workshop.hexagonal.cinema.tickets.catalogs
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerSpringRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.NOW
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createCustomerDTO
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createCustomerEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createFavoritesEntity
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue

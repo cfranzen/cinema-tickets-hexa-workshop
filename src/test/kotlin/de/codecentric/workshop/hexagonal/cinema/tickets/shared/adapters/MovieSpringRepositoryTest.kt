@@ -1,6 +1,6 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters
 
-import de.codecentric.workshop.hexagonal.cinema.tickets.createMovieEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createMovieEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre.ACTION
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre.COMEDY
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre.DRAMA

@@ -1,6 +1,6 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters
 
-import de.codecentric.workshop.hexagonal.cinema.tickets.createBookingEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createBookingEntity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

@@ -1,7 +1,7 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets
 
-import de.codecentric.workshop.hexagonal.cinema.tickets.config.DatakrakenProperties
-import de.codecentric.workshop.hexagonal.cinema.tickets.config.MoviePostersProperties
+import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.config.DatakrakenProperties
+import de.codecentric.workshop.hexagonal.cinema.tickets.catalogs.config.MoviePostersProperties
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication

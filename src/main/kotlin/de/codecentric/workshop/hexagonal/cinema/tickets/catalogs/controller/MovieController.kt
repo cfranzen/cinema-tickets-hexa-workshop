@@ -1,8 +1,6 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets.controller
+package de.codecentric.workshop.hexagonal.cinema.tickets.catalogs.controller
 
-import com.google.cloud.storage.BlobId
-import com.google.cloud.storage.Storage
-import de.codecentric.workshop.hexagonal.cinema.tickets.config.MoviePostersProperties
+import de.codecentric.workshop.hexagonal.cinema.tickets.catalogs.repositories.PosterRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieSpringRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre
@@ -19,8 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 internal class MovieController(
     private val movieSpringRepository: MovieSpringRepository,
-    private val storage: Storage,
-    private val properties: MoviePostersProperties
+    private val posterRepository: PosterRepository
 ) {
 
     @PostMapping("/movies")
@@ -44,11 +41,11 @@ internal class MovieController(
             .findById(movieId)
             .orElseThrow { IllegalArgumentException("Could not find movie with ID $movieId") }
 
-        val poster = storage.get(BlobId.of(properties.bucket, movie.posterId))
+        val posterId = movie.posterId
+        val poster = posterRepository.findPosterById(posterId)
             ?: return ResponseEntity.notFound().build()
 
-        val content = poster.getContent()
-        return ResponseEntity.ok().body(ByteArrayResource(content))
+        return ResponseEntity.ok().body(ByteArrayResource(poster))
     }
 }
 

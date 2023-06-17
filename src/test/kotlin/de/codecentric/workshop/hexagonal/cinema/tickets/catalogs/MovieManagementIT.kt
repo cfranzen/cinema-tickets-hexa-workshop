@@ -1,10 +1,12 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets
+package de.codecentric.workshop.hexagonal.cinema.tickets.catalogs
 
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieSpringRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre.ACTION
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre.COMEDY
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createMovieDTO
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createMovieEntity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue

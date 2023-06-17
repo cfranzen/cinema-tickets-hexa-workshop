@@ -1,4 +1,4 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets.controller
+package de.codecentric.workshop.hexagonal.cinema.tickets.catalogs.controller
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntityData

@@ -5,10 +5,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import de.codecentric.workshop.hexagonal.cinema.tickets.ErrorResponse
-import de.codecentric.workshop.hexagonal.cinema.tickets.createCustomerEntity
-import de.codecentric.workshop.hexagonal.cinema.tickets.createFavoritesEntity
-import de.codecentric.workshop.hexagonal.cinema.tickets.createMovieEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.ErrorResponse
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createCustomerEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createFavoritesEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createMovieEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.adapters.inbound.RecommendationDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerSpringRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieSpringRepository

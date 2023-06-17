@@ -1,7 +1,7 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets
+package de.codecentric.workshop.hexagonal.cinema.tickets.tests
 
-import de.codecentric.workshop.hexagonal.cinema.tickets.controller.CustomerWithoutIdDTO
-import de.codecentric.workshop.hexagonal.cinema.tickets.controller.MovieWithoutIdDTO
+import de.codecentric.workshop.hexagonal.cinema.tickets.catalogs.controller.CustomerWithoutIdDTO
+import de.codecentric.workshop.hexagonal.cinema.tickets.catalogs.controller.MovieWithoutIdDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.BookingEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntityData

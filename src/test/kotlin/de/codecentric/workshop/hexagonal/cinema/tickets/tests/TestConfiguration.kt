@@ -1,11 +1,10 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets.config
+package de.codecentric.workshop.hexagonal.cinema.tickets.tests
 
 import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.BlobInfo
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.contrib.nio.testing.LocalStorageHelper
-import de.codecentric.workshop.hexagonal.cinema.tickets.NOW
-import de.codecentric.workshop.hexagonal.cinema.tickets.ZONE
+import de.codecentric.workshop.hexagonal.cinema.tickets.catalogs.config.MoviePostersProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.nio.file.Files

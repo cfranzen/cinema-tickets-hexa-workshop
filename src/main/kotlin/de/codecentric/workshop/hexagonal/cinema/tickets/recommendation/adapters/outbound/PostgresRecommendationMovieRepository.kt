@@ -10,7 +10,7 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.MovieState
 import org.springframework.stereotype.Repository
 
 @Repository
-internal class PostgresMovieRepository(
+internal class PostgresRecommendationMovieRepository(
     private val movieSpringRepository: MovieSpringRepository
 ) : MovieRepository {
 

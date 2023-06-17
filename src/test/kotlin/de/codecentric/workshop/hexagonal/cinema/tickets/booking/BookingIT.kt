@@ -1,8 +1,8 @@
-package de.codecentric.workshop.hexagonal.cinema.tickets
+package de.codecentric.workshop.hexagonal.cinema.tickets.booking
 
-import de.codecentric.workshop.hexagonal.cinema.tickets.controller.BookingDTO
-import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.BookingEntity
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.Screening
+import de.codecentric.workshop.hexagonal.cinema.tickets.booking.domain.Booking
+import de.codecentric.workshop.hexagonal.cinema.tickets.booking.domain.BookingRequest
+import de.codecentric.workshop.hexagonal.cinema.tickets.booking.domain.Screening
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerSpringRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieSpringRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre.ACTION
@@ -11,6 +11,10 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.MovieState
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.MovieState.EXPIRED
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.MovieState.IN_THEATER
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.MovieState.PREVIEW
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.ErrorResponse
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.NOW
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createCustomerEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createMovieEntity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -171,7 +175,7 @@ internal class BookingIT(
         val customer = customerSpringRepository.save(createCustomerEntity())
         val movie = movieSpringRepository.save(createMovieEntity())
 
-        val request = BookingDTO(
+        val request = BookingRequest(
             customerId = customer.id,
             screeningId = 1,
             seats = 3
@@ -182,7 +186,7 @@ internal class BookingIT(
             "/bookings",
             HttpMethod.POST,
             HttpEntity(request),
-            BookingEntity::class.java
+            Booking::class.java
         )
 
         // Then
@@ -191,7 +195,7 @@ internal class BookingIT(
             .usingRecursiveComparison()
             .ignoringFields("id")
             .isEqualTo(
-                BookingEntity(
+                Booking(
                     customerId = customer.id,
                     movieId = movie.id,
                     startTime = LocalDateTime.parse("2023-06-08T14:30"),
@@ -207,7 +211,7 @@ internal class BookingIT(
         val customer = customerSpringRepository.save(createCustomerEntity())
         movieSpringRepository.save(createMovieEntity())
 
-        val request = BookingDTO(
+        val request = BookingRequest(
             customerId = customer.id,
             screeningId = 12345,
             seats = 3
@@ -231,7 +235,7 @@ internal class BookingIT(
         val customer = customerSpringRepository.save(createCustomerEntity())
         movieSpringRepository.save(createMovieEntity())
 
-        val request = BookingDTO(
+        val request = BookingRequest(
             customerId = customer.id + 1,
             screeningId = 1,
             seats = 3
