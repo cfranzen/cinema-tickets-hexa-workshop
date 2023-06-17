@@ -22,7 +22,10 @@ internal class PostgresMovieRepository(
     }
 
     override fun getGenresForMovieIds(movieIds: List<Int>): Set<Genre> {
-        return movieSpringRepository.findAllById(movieIds).map { it.genre }.toSet()
+        return movieSpringRepository
+            .findAllById(movieIds)
+            .map { it.genre }
+            .toSet()
     }
 
     override fun getMoviesByGenres(genres: Collection<Genre>): List<Movie> {

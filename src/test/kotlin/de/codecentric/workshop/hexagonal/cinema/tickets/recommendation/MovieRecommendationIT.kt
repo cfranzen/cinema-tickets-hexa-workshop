@@ -228,7 +228,7 @@ internal class MovieRecommendationIT(
     }
 
     @Test
-    fun `throw if datakraken API does not provided sufficient results to recommend movies`() {
+    fun `throw if datakraken API does not provide sufficient results to recommend movies`() {
         // Given
         val customer = customerSpringRepository.save(
             createCustomerEntity(
