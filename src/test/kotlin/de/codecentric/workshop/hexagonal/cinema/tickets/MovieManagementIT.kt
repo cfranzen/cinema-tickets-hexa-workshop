@@ -44,12 +44,6 @@ class MovieManagementIT(
             registry.add("spring.datasource.username") { postgres.username }
             registry.add("spring.datasource.password") { postgres.password }
         }
-
-        @JvmStatic
-        @BeforeAll
-        fun startPostgres() {
-            postgres.start()
-        }
     }
 
     @AfterEach
