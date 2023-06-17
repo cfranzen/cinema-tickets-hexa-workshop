@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
@@ -30,6 +31,7 @@ internal class CustomerSpringRepositoryTest(
         @Container
         val postgres = PostgreSQLContainer(DockerImageName.parse("postgres:15.3"))
             .withReuse(true)
+            .waitingFor(Wait.forListeningPort())
 
         @JvmStatic
         @DynamicPropertySource
