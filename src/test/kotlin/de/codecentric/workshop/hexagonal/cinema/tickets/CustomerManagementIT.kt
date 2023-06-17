@@ -5,6 +5,7 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRep
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
@@ -30,6 +32,7 @@ class CustomerManagementIT(
         @Container
         val postgres = PostgreSQLContainer(DockerImageName.parse("postgres:15.3"))
             .withReuse(true)
+            .waitingFor(Wait.forListeningPort())
 
         @JvmStatic
         @DynamicPropertySource
@@ -37,6 +40,12 @@ class CustomerManagementIT(
             registry.add("spring.datasource.url") { postgres.jdbcUrl }
             registry.add("spring.datasource.username") { postgres.username }
             registry.add("spring.datasource.password") { postgres.password }
+        }
+
+        @JvmStatic
+        @BeforeAll
+        fun startPostgres() {
+            postgres.start()
         }
     }
 
