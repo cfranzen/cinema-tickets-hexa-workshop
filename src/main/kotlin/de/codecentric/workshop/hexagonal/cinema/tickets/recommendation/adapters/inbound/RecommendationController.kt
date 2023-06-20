@@ -19,6 +19,7 @@ internal class MovieRecommendationController(
     @GetMapping("/recommendation/{customerId}")
     @Transactional
     fun recommendMoviesToUser(@PathVariable("customerId") customerId: Int): List<RecommendationDTO> {
+        // TODO sollte das nicht auch nochmal nen port haben und evtl. sogar im service passieren?
         val customer = findCustomerById(customerId)
         return recommendationService.calcRecommendations(customer)
     }
