@@ -343,9 +343,12 @@ class MovieRecommendationIT(
         val response = if (genres.isEmpty()) {
             """
                 {
-                    data: [
+                    "data": [
                         {
-                            genres: []
+                            "name": "Hans Damp",
+                            "mail": "hans@dampf.de",
+                            "movie": "String",
+                            "genres": []
                         }
                     ]
                 }
@@ -353,9 +356,12 @@ class MovieRecommendationIT(
         } else {
             """
                 {
-                    data: [
+                    "data": [
                         {
-                            genres: ["${genres.joinToString(separator = "\",\"") { it.name }}]
+                            "name": "Hans Damp",
+                            "mail": "hans@dampf.de",
+                            "movie": "String",
+                            "genres": ["${genres.joinToString(separator = "\",\"") { it.name }}"]
                         }
                     ]
                 }

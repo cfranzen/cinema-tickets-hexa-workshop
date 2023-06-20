@@ -134,7 +134,6 @@ ${
             .map { datakrakenGenres -> Genre.findByName(datakrakenGenres) }
             .filterNotNull()
 
-        val suggestedGenres = response.body!!
         val missingRecommendations = MIN_RECOMMENDATIONS - currentRecommendations.size
         return movieRepository
             .findByGenreIn(foundGenres)
