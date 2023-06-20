@@ -2,6 +2,7 @@ package de.codecentric.workshop.hexagonal.cinema.tickets.tests
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.catalogs.controller.CustomerWithoutIdDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.catalogs.controller.MovieWithoutIdDTO
+import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.Customer
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.BookingEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntityData
@@ -107,4 +108,11 @@ data class ErrorResponse(
     val message: String,
     val path: String,
     val timestamp: OffsetDateTime
+)
+
+fun createCustomer() = Customer(
+    id = 1,
+    name = "Hans Dampf",
+    email = "hans@dampf.de",
+    favoriteMovieIds = listOf(123, 345)
 )
