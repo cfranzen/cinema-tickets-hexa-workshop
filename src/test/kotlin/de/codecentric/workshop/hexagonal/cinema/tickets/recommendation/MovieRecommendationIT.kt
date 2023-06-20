@@ -5,14 +5,14 @@ import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import de.codecentric.workshop.hexagonal.cinema.tickets.tests.ErrorResponse
-import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createCustomerEntity
-import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createFavoritesEntity
-import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createMovieEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.adapters.inbound.RecommendationDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerSpringRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieSpringRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.ErrorResponse
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createCustomerEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createFavoritesEntity
+import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createMovieEntity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -345,9 +345,31 @@ internal class MovieRecommendationIT(
 
     private fun mockDatakrakenApi(email: String, vararg genres: Genre) {
         val response = if (genres.isEmpty()) {
-            "[]"
+            """
+                {
+                    "data": [
+                        {
+                            "name": "Hans Damp",
+                            "mail": "hans@dampf.de",
+                            "movie": "String",
+                            "genres": []
+                        }
+                    ]
+                }
+                """.trimIndent()
         } else {
-            """["${genres.joinToString(separator = "\",\"") { it.name }}"]"""
+            """
+                {
+                    "data": [
+                        {
+                            "name": "Hans Damp",
+                            "mail": "hans@dampf.de",
+                            "movie": "String",
+                            "genres": ["${genres.joinToString(separator = "\",\"") { it.name }}"]
+                        }
+                    ]
+                }
+                """.trimIndent()
         }
 
         stubFor(

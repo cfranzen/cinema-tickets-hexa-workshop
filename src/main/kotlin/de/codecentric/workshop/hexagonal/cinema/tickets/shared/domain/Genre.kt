@@ -9,5 +9,11 @@ enum class Genre {
     MYSTERY,
     ROMANCE,
     THRILLER,
-    WESTERN,
+    WESTERN;
+
+    companion object {
+        fun findByName(name: String): Genre? {
+            return Genre.values().find { it.name == name.uppercase() }
+        }
+    }
 }

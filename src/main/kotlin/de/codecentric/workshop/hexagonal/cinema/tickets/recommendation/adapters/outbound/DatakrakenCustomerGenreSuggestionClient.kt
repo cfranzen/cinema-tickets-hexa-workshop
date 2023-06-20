@@ -5,7 +5,6 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.Cu
 import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.ports.CustomerGenreSuggestionClient
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre
 import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClientException
@@ -23,16 +22,30 @@ internal class DatakrakenCustomerGenreSuggestionClient(
                 "/api/?email={email}",
                 HttpMethod.GET,
                 null,
-                object : ParameterizedTypeReference<List<Genre>>() {},
+                DatakrakenCustomerData::class.java,
                 mapOf("email" to customer.email)
             )
         } catch (e: RestClientException) {
             return emptySet()
         }
 
-        if (response.statusCode.isError || response.body == null || response.body!!.isEmpty()) {
+        if (response.statusCode.isError || response.body == null) {
             return emptySet()
         }
-        return response.body!!.toSet()
+
+        return response.body!!.data
+            .flatMap { dataEntry -> dataEntry.genres ?: emptyList() }
+            .map { datakrakenGenres -> Genre.findByName(datakrakenGenres) }
+            .filterNotNull()
+            .toSet()
     }
 }
+
+internal data class DatakrakenCustomerData(val data: List<CustomerDataEntry>)
+
+internal data class CustomerDataEntry(
+    val name: String,
+    val mail: String,
+    val movie: String,
+    val genres: List<String>?,
+)
