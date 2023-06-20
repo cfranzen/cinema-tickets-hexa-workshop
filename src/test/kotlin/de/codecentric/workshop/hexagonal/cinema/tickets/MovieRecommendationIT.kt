@@ -12,7 +12,6 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieReposi
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -122,7 +121,8 @@ class MovieRecommendationIT(
 
         // Then
         assertTrue(result.statusCode.is2xxSuccessful)
-        assertThat(result.body).isEqualTo("""
+        assertThat(result.body).isEqualTo(
+            """
           <html>
               <header>                
                   <title>Customer Recommendations</title>
@@ -341,9 +341,26 @@ class MovieRecommendationIT(
 
     private fun mockDatakrakenApi(email: String, vararg genres: Genre) {
         val response = if (genres.isEmpty()) {
-            "[]"
+            """
+                {
+                    data: [
+                        {
+                            genres: []
+                        }
+                    ]
+                }
+                """.trimIndent()
         } else {
-            """["${genres.joinToString(separator = "\",\"") { it.name }}"]"""
+            """
+                {
+                    data: [
+                        {
+                            genres: ["${genres.joinToString(separator = "\",\"") { it.name }}]
+                        }
+                    ]
+                }
+                """.trimIndent()
+//            """["${genres.joinToString(separator = "\",\"") { it.name }}"]"""
         }
 
         stubFor(

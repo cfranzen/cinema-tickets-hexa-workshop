@@ -2,6 +2,7 @@ package de.codecentric.workshop.hexagonal.cinema.tickets.controller
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.config.DatakrakenProperties
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Customer
+import de.codecentric.workshop.hexagonal.cinema.tickets.model.DatakrakenCustomerData
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
@@ -117,21 +118,26 @@ ${
                 "/api/?email={email}",
                 HttpMethod.GET,
                 null,
-                object : ParameterizedTypeReference<List<Genre>>() {},
+                object : ParameterizedTypeReference<DatakrakenCustomerData>() {},
                 mapOf("email" to customer.email)
             )
         } catch (e: RestClientException) {
             return emptyList()
         }
 
-        if (response.statusCode.isError || response.body == null || response.body!!.isEmpty()) {
+        if (response.statusCode.isError || response.body == null) {
             return emptyList()
         }
+
+        val foundGenres = response.body!!.data
+            .flatMap { dataEntry -> dataEntry.genres ?: emptyList() }
+            .map { datakrakenGenres -> Genre.findByName(datakrakenGenres) }
+            .filterNotNull()
 
         val suggestedGenres = response.body!!
         val missingRecommendations = MIN_RECOMMENDATIONS - currentRecommendations.size
         return movieRepository
-            .findByGenreIn(suggestedGenres)
+            .findByGenreIn(foundGenres)
             .sortedBy { it.id }
             .take(missingRecommendations)
             .map { RecommendationDTO(it.id, 0.01) }
