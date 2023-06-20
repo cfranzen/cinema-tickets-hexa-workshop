@@ -366,7 +366,6 @@ class MovieRecommendationIT(
                     ]
                 }
                 """.trimIndent()
-//            """["${genres.joinToString(separator = "\",\"") { it.name }}"]"""
         }
 
         stubFor(
