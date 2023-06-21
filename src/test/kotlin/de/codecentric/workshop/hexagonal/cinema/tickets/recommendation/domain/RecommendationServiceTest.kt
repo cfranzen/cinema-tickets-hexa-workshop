@@ -7,6 +7,7 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createCustomer
 import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createMovie
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class RecommendationServiceTest {
 
@@ -66,5 +67,18 @@ class RecommendationServiceTest {
             Recommendation(customer = customer, movie = movie2, probability = 0.01),
             Recommendation(customer = customer, movie = movie3, probability = 0.01)
         )
+    }
+
+    @Test
+    fun `throw if not enough recommendations could be calculated`() {
+        // Given
+        val customer = createCustomer(
+            favorites = listOf()
+        )
+
+        // When / Then
+        val exception = assertThrows<IllegalStateException> { sut.calcRecommendations(customer) }
+        assertThat(exception.message)
+            .isEqualTo("Could not recommend movies for customer with ID ${customer.id}")
     }
 }
