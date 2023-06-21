@@ -23,7 +23,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -265,16 +264,6 @@ internal class MovieRecommendationIT(
                     aResponse()
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                         .withBody(response)
-                )
-        )
-    }
-
-    private fun mockDatakrakenApiWithErrorReponse(statusCode: Int) {
-        stubFor(
-            get(anyUrl())
-                .willReturn(
-                    aResponse()
-                        .withStatus(statusCode)
                 )
         )
     }

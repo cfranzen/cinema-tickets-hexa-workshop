@@ -8,7 +8,7 @@ class FakeMovieRepository : MovieRepository {
 
     private val movies = mutableSetOf<Movie>()
 
-    fun add(movie: Movie): Movie {
+    fun save(movie: Movie): Movie {
         val nextId = (movies.maxOfOrNull { it.id } ?: 0) + 1
         val movieWithId = movie.copy(id = nextId)
         movies.add(movieWithId)
