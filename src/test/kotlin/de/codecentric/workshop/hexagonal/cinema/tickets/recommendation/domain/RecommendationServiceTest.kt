@@ -1,6 +1,5 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain
 
-import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.adapters.inbound.RecommendationDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.ports.FakeCustomerGenreSuggestionClient
 import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.ports.FakeMovieRepository
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre
@@ -37,9 +36,9 @@ class RecommendationServiceTest {
 
         // Then
         assertThat(recommendations).containsExactlyInAnyOrder(
-            RecommendationDTO(movieId = movie1.id, probability = 0.5),
-            RecommendationDTO(movieId = movie2.id, probability = 0.5),
-            RecommendationDTO(movieId = movie3.id, probability = 0.05)
+            Recommendation(customer = customer, movie = movie1, probability = 0.5),
+            Recommendation(customer = customer, movie = movie2, probability = 0.5),
+            Recommendation(customer = customer, movie = movie3, probability = 0.05)
         )
     }
 }

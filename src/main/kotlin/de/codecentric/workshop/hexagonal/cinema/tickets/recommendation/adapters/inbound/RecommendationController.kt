@@ -1,9 +1,9 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.adapters.inbound
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.Customer
+import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.Recommendation
 import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.RecommendationService
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerSpringRepository
-import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.MovieSpringRepository
 import org.springframework.http.MediaType
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 internal class MovieRecommendationController(
     private val customerSpringRepository: CustomerSpringRepository,
-    private val movieSpringRepository: MovieSpringRepository,
     private val recommendationService: RecommendationService
 ) {
     @GetMapping("/recommendation/{customerId}")
@@ -21,7 +20,9 @@ internal class MovieRecommendationController(
     fun recommendMoviesToUser(@PathVariable("customerId") customerId: Int): List<RecommendationDTO> {
         // TODO sollte das nicht auch nochmal nen port haben und evtl. sogar im service passieren?
         val customer = findCustomerById(customerId)
-        return recommendationService.calcRecommendations(customer)
+        return recommendationService
+            .calcRecommendations(customer)
+            .map { RecommendationDTO(movieId = it.movie.id, probability = it.probability) }
     }
 
     @GetMapping("/recommendation/{customerId}/html", produces = [MediaType.TEXT_HTML_VALUE])
@@ -64,14 +65,11 @@ ${
 
     }
 
-    private fun printRecommendationInfoAsHtml(recommendation: RecommendationDTO): String {
-        val movie = movieSpringRepository.findById(recommendation.movieId)
-            .orElseThrow { IllegalStateException("Could not find movie for ID ${recommendation.movieId}") }
-
+    private fun printRecommendationInfoAsHtml(recommendation: Recommendation): String {
         return """
             <tr>
-                <td>${movie.id}</td>
-                <td>${movie.title}</td>
+                <td>${recommendation.movie.id}</td>
+                <td>${recommendation.movie.title}</td>
                 <td>${recommendation.probability}</td>
             </tr>
         """.trimIndent()
@@ -79,7 +77,7 @@ ${
 
 }
 
-data class RecommendationDTO(
+internal data class RecommendationDTO(
     val movieId: Int,
     val probability: Double
 )
