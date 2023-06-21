@@ -49,10 +49,12 @@ internal fun createMovieDTO(
 )
 
 internal fun createMovie(
+    id: Int = 0,
     title: String = "This is a new movie",
     genre: Genre = Genre.ACTION,
     state: MovieState = MovieState.IN_THEATER
 ) = Movie(
+    id = id,
     title = title,
     genre = genre,
     state = state
