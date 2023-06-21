@@ -3,6 +3,7 @@ package de.codecentric.workshop.hexagonal.cinema.tickets.tests
 import de.codecentric.workshop.hexagonal.cinema.tickets.catalogs.controller.CustomerWithoutIdDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.catalogs.controller.MovieWithoutIdDTO
 import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.Customer
+import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.domain.Movie
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.BookingEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntity
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.adapters.CustomerEntityData
@@ -44,6 +45,16 @@ internal fun createMovieDTO(
     genre = genre,
     description = "This is some long description how cool this movie is",
     posterId = UUID.randomUUID().toString(),
+    state = state
+)
+
+internal fun createMovie(
+    title: String = "This is a new movie",
+    genre: Genre = Genre.ACTION,
+    state: MovieState = MovieState.IN_THEATER
+) = Movie(
+    title = title,
+    genre = genre,
     state = state
 )
 
@@ -92,6 +103,18 @@ internal fun createCustomerDTO(
     )
 }
 
+internal fun createCustomer(
+    id: Int = 1,
+    name: String = "Hans Dampf",
+    email: String = "hans@dampf.de",
+    favorites: List<Int> = listOf(123, 345)
+): Customer = Customer(
+    id = id,
+    name = name,
+    email = email,
+    favoriteMovieIds = favorites
+)
+
 internal fun createBookingEntity() = BookingEntity(
     id = 0,
     customerId = 1,
@@ -108,11 +131,4 @@ data class ErrorResponse(
     val message: String,
     val path: String,
     val timestamp: OffsetDateTime
-)
-
-fun createCustomer() = Customer(
-    id = 1,
-    name = "Hans Dampf",
-    email = "hans@dampf.de",
-    favoriteMovieIds = listOf(123, 345)
 )
