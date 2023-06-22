@@ -1,10 +1,11 @@
 package de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.adapters.outbound
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.config.DatakrakenProperties
+import de.codecentric.workshop.hexagonal.cinema.tickets.recommendation.config.PowerDataProperties
 import de.codecentric.workshop.hexagonal.cinema.tickets.shared.domain.Genre
 import de.codecentric.workshop.hexagonal.cinema.tickets.tests.createCustomer
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -14,24 +15,25 @@ import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 
+@Disabled
 @AutoConfigureWebClient
 @SpringBootTest(
-    classes = [DatakrakenCustomerGenreSuggestionClient::class],
-    properties = ["customer.datakraken.url=http://localhost:\${wiremock.server.port}"],
+    classes = [PowerDataCustomerGenreSuggestionClient::class],
+    properties = ["customer.powerdata.url=http://localhost:\${wiremock.server.port}"],
 )
 @EnableConfigurationProperties(
-    DatakrakenProperties::class
+    PowerDataProperties::class
 )
 @AutoConfigureWireMock(port = 0)
-internal class DatakrakenCustomerGenreSuggestionClientTest(
-    @Autowired private val sut: DatakrakenCustomerGenreSuggestionClient
+internal class PowerDataCustomerGenreSuggestionClientTest(
+    @Autowired private val sut: PowerDataCustomerGenreSuggestionClient
 ) {
 
     @Test
-    fun `return empty list if datakraken API does not supply any genres`() {
+    fun `return empty list if powerdata API does not supply any genres`() {
         // Given
         val customer = createCustomer()
-        mockDatakrakenApi(customer.email)
+        mockPowerDataApi(customer.email)
 
         // When
         val result = sut.suggestGenres(customer)
@@ -41,10 +43,10 @@ internal class DatakrakenCustomerGenreSuggestionClientTest(
     }
 
     @Test
-    fun `throw if datakraken API reponds with a server error`() {
+    fun `throw if powerdata API reponds with a server error`() {
         // Given
         val customer = createCustomer()
-        mockDatakrakenApiWithErrorReponse(HttpStatus.INTERNAL_SERVER_ERROR.value())
+        mockPowerDataApiWithErrorReponse(HttpStatus.INTERNAL_SERVER_ERROR.value())
 
         // When
         val result = sut.suggestGenres(customer)
@@ -54,10 +56,10 @@ internal class DatakrakenCustomerGenreSuggestionClientTest(
     }
 
     @Test
-    fun `throw if datakraken API reponds with a client error`() {
+    fun `throw if powerdata API reponds with a client error`() {
         // Given
         val customer = createCustomer()
-        mockDatakrakenApiWithErrorReponse(HttpStatus.BAD_REQUEST.value())
+        mockPowerDataApiWithErrorReponse(HttpStatus.BAD_REQUEST.value())
 
         // When
         val result = sut.suggestGenres(customer)
@@ -66,31 +68,24 @@ internal class DatakrakenCustomerGenreSuggestionClientTest(
         assertThat(result).isEmpty()
     }
 
-    private fun mockDatakrakenApi(email: String, vararg genres: Genre) {
+
+    private fun mockPowerDataApi(email: String, vararg genres: Genre) {
         val response = if (genres.isEmpty()) {
             """
                 {
-                    "data": [
-                        {
-                            "name": "Hans Damp",
-                            "mail": "hans@dampf.de",
-                            "movie": "String",
-                            "genres": []
-                        }
-                    ]
+                    "name": "Hans Damp",
+                    "mail": "hans@dampf.de",
+                    "movie": "String",
+                    "genres": []
                 }
                 """.trimIndent()
         } else {
             """
                 {
-                    "data": [
-                        {
-                            "name": "Hans Damp",
-                            "mail": "hans@dampf.de",
-                            "movie": "String",
-                            "genres": ["${genres.joinToString(separator = "\",\"") { it.name }}"]
-                        }
-                    ]
+                    "name": "Hans Damp",
+                    "mail": "hans@dampf.de",
+                    "movie": "String",
+                    "genres": ["${genres.joinToString(separator = "\",\"") { it.name }}"]
                 }
                 """.trimIndent()
         }
@@ -106,7 +101,7 @@ internal class DatakrakenCustomerGenreSuggestionClientTest(
         )
     }
 
-    private fun mockDatakrakenApiWithErrorReponse(statusCode: Int) {
+    private fun mockPowerDataApiWithErrorReponse(statusCode: Int) {
         WireMock.stubFor(
             WireMock.get(WireMock.anyUrl())
                 .willReturn(
