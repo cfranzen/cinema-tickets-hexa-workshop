@@ -10,10 +10,9 @@ import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState.IN_THEA
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState.PREVIEW
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Screening
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
-import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieSpringRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -33,7 +32,7 @@ import java.time.LocalDateTime
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 class BookingIT(
-    @Autowired private val movieRepository: MovieRepository,
+    @Autowired private val movieSpringRepository: MovieSpringRepository,
     @Autowired private val customerRepository: CustomerRepository,
     @Autowired private val testRestTemplate: TestRestTemplate
 ) {
@@ -55,14 +54,14 @@ class BookingIT(
 
     @AfterEach
     fun cleanupData() {
-        movieRepository.deleteAll()
+        movieSpringRepository.deleteAll()
     }
 
     @Test
     fun `list available screenings for previews`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = ACTION, state = PREVIEW))
-        val movie2 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY, state = PREVIEW))
+        val movie1 = movieSpringRepository.save(createMovie(title = "Die Hard", genre = ACTION, state = PREVIEW))
+        val movie2 = movieSpringRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY, state = PREVIEW))
 
         // When
         val result = testRestTemplate.exchange(
@@ -85,8 +84,8 @@ class BookingIT(
     @Test
     fun `list available screenings for movies that are in theater`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = ACTION, state = IN_THEATER))
-        val movie2 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY, state = IN_THEATER))
+        val movie1 = movieSpringRepository.save(createMovie(title = "Die Hard", genre = ACTION, state = IN_THEATER))
+        val movie2 = movieSpringRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY, state = IN_THEATER))
 
         // When
         val result = testRestTemplate.exchange(
@@ -135,8 +134,8 @@ class BookingIT(
     @Test
     fun `do not create screenings for movies that are announced or expired`() {
         // Given
-        movieRepository.save(createMovie(title = "Die Hard", genre = ACTION, state = ANNOUNCED))
-        movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY, state = EXPIRED))
+        movieSpringRepository.save(createMovie(title = "Die Hard", genre = ACTION, state = ANNOUNCED))
+        movieSpringRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY, state = EXPIRED))
 
         // When
         val result = testRestTemplate.exchange(
@@ -170,7 +169,7 @@ class BookingIT(
     fun `book screening for customer`() {
         // Given
         val customer = customerRepository.save(createCustomer())
-        val movie = movieRepository.save(createMovie())
+        val movie = movieSpringRepository.save(createMovie())
 
         val request = BookingDTO(
             customerId = customer.id,
@@ -206,7 +205,7 @@ class BookingIT(
     fun `booking fails if screening ID is invalid`() {
         // Given
         val customer = customerRepository.save(createCustomer())
-        movieRepository.save(createMovie())
+        movieSpringRepository.save(createMovie())
 
         val request = BookingDTO(
             customerId = customer.id,
@@ -230,7 +229,7 @@ class BookingIT(
     fun `booking fails if customer ID is invalid`() {
         // Given
         val customer = customerRepository.save(createCustomer())
-        movieRepository.save(createMovie())
+        movieSpringRepository.save(createMovie())
 
         val request = BookingDTO(
             customerId = customer.id + 1,

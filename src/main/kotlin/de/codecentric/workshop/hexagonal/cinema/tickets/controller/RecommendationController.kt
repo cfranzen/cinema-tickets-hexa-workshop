@@ -2,45 +2,37 @@ package de.codecentric.workshop.hexagonal.cinema.tickets.controller
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.config.DatakrakenProperties
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Customer
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.DatakrakenCustomerData
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
-import de.codecentric.workshop.hexagonal.cinema.tickets.model.MovieState
+import de.codecentric.workshop.hexagonal.cinema.tickets.recommendations.domain.RecommendationService
 import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.CustomerRepository
-import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieSpringRepository
 import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.core.ParameterizedTypeReference
-import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.RestClientException
 
 @RestController
 class MovieRecommendationController(
     private val customerRepository: CustomerRepository,
-    private val movieRepository: MovieRepository,
+    private val movieSpringRepository: MovieSpringRepository,
     private val datakrakenProperties: DatakrakenProperties,
-    private val restTemplateBuilder: RestTemplateBuilder
+    private val restTemplateBuilder: RestTemplateBuilder,
+    private val recommendationService: RecommendationService
 ) {
-
-    companion object {
-        private const val MIN_RECOMMENDATIONS = 3
-    }
 
     @GetMapping("/recommendation/{customerId}")
     @Transactional
     fun recommendMoviesToUser(@PathVariable("customerId") customerId: Int): List<RecommendationDTO> {
         val customer = findCustomerById(customerId)
-        return calcRecommendations(customer)
+        return recommendationService.calcRecommendations(customer)
     }
 
     @GetMapping("/recommendation/{customerId}/html", produces = [MediaType.TEXT_HTML_VALUE])
     @Transactional
     fun recommendMoviesToUserInHtml(@PathVariable("customerId") customerId: Int): String {
         val customer = findCustomerById(customerId)
-        val recommendations = calcRecommendations(customer)
+        val recommendations = recommendationService.calcRecommendations(customer)
 
         return """
             <html>
@@ -64,86 +56,8 @@ ${
         """.trimIndent()
     }
 
-    private fun calcRecommendations(customer: Customer): List<RecommendationDTO> {
-        val recommendations = mutableListOf<RecommendationDTO>()
-        recommendations.addAll(recommendByFavorites(customer))
-
-        if (recommendations.size < MIN_RECOMMENDATIONS) {
-            recommendations.addAll(fillUpByEqualGenre(recommendations))
-        }
-
-        if (recommendations.size < MIN_RECOMMENDATIONS) {
-            recommendations.addAll(fillUpByDatakrakenRecommendations(customer, recommendations))
-        }
-
-        if (recommendations.size < MIN_RECOMMENDATIONS) {
-            throw IllegalStateException("Could not recommend movies for customer with ID ${customer.id}")
-        }
-        return recommendations
-    }
-
-    private fun findCustomerById(customerId: Int): Customer =
-        customerRepository.findById(customerId)
-            .orElseThrow { IllegalArgumentException("Could not find customer with ID $customerId") }
-
-    private fun recommendByFavorites(customer: Customer): List<RecommendationDTO> {
-        val favoriteMovieIds = customer.data.favorites.map { it.movieId }
-        return movieRepository
-            .findAllById(favoriteMovieIds)
-            .filter { it.state == MovieState.IN_THEATER }
-            .map { RecommendationDTO(it.id, 0.5) }
-    }
-
-    private fun fillUpByEqualGenre(currentRecommendations: List<RecommendationDTO>): List<RecommendationDTO> {
-        val missingRecommendations = MIN_RECOMMENDATIONS - currentRecommendations.size
-        val movieIds = currentRecommendations.map { it.movieId }.toSet()
-        val moviesById = movieRepository.findAllById(movieIds).associateBy { it.id }
-
-        val currentGenres = currentRecommendations.mapNotNull { moviesById[it.movieId]?.genre }.toSet()
-        return movieRepository
-            .findByGenreIn(currentGenres)
-            .filter { !movieIds.contains(it.id) }
-            .sortedBy { it.id }
-            .take(missingRecommendations)
-            .map { RecommendationDTO(it.id, 0.05) }
-    }
-
-    private fun fillUpByDatakrakenRecommendations(
-        customer: Customer,
-        currentRecommendations: List<RecommendationDTO>
-    ): List<RecommendationDTO> {
-        val restTemplate = restTemplateBuilder.rootUri(datakrakenProperties.url).build()
-        val response = try {
-            restTemplate.exchange(
-                "/api/?email={email}",
-                HttpMethod.GET,
-                null,
-                object : ParameterizedTypeReference<DatakrakenCustomerData>() {},
-                mapOf("email" to customer.email)
-            )
-        } catch (e: RestClientException) {
-            return emptyList()
-        }
-
-        if (response.statusCode.isError || response.body == null) {
-            return emptyList()
-        }
-
-        val foundGenres = response.body!!.data
-            .flatMap { dataEntry -> dataEntry.genres ?: emptyList() }
-            .map { datakrakenGenres -> Genre.findByName(datakrakenGenres) }
-            .filterNotNull()
-
-        val missingRecommendations = MIN_RECOMMENDATIONS - currentRecommendations.size
-        return movieRepository
-            .findByGenreIn(foundGenres)
-            .sortedBy { it.id }
-            .take(missingRecommendations)
-            .map { RecommendationDTO(it.id, 0.01) }
-    }
-
     private fun printRecommendationInfoAsHtml(recommendation: RecommendationDTO): String {
-        val movie = movieRepository.findById(recommendation.movieId)
+        val movie = movieSpringRepository.findById(recommendation.movieId)
             .orElseThrow { IllegalStateException("Could not find movie for ID ${recommendation.movieId}") }
 
         return """
@@ -154,6 +68,11 @@ ${
             </tr>
         """.trimIndent()
     }
+
+    private fun findCustomerById(customerId: Int): Customer =
+        customerRepository.findById(customerId)
+            .orElseThrow { IllegalArgumentException("Could not find customer with ID $customerId") }
+
 
 }
 

@@ -2,11 +2,10 @@ package de.codecentric.workshop.hexagonal.cinema.tickets
 
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Genre
 import de.codecentric.workshop.hexagonal.cinema.tickets.model.Movie
-import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieRepository
+import de.codecentric.workshop.hexagonal.cinema.tickets.repositories.MovieSpringRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -27,7 +26,7 @@ import java.nio.file.Path
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 class MovieManagementIT(
-    @Autowired private val movieRepository: MovieRepository,
+    @Autowired private val movieSpringRepository: MovieSpringRepository,
     @Autowired private val testRestTemplate: TestRestTemplate
 ) {
 
@@ -48,7 +47,7 @@ class MovieManagementIT(
 
     @AfterEach
     fun cleanupData() {
-        movieRepository.deleteAll()
+        movieSpringRepository.deleteAll()
     }
 
     @Test
@@ -87,9 +86,9 @@ class MovieManagementIT(
     @Test
     fun `retrieve existing movie by its ID`() {
         // Given
-        val movie1 = movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
-        val movie2 = movieRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
-        val movie3 = movieRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
+        val movie1 = movieSpringRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
+        val movie2 = movieSpringRepository.save(createMovie(title = "Ace Ventura", genre = Genre.COMEDY))
+        val movie3 = movieSpringRepository.save(createMovie(title = "Mission Impossible", genre = Genre.ACTION))
         val moviesRequest = listOf(movie1, movie2, movie3)
 
         // When
@@ -117,7 +116,7 @@ class MovieManagementIT(
     @Test
     fun `throw HTTP 404 NOT FOUND if movie does not exists`() {
         // Given
-        val movie = movieRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
+        val movie = movieSpringRepository.save(createMovie(title = "Die Hard", genre = Genre.ACTION))
         val invalidMovieId = movie.id + 1
 
         // When
@@ -136,7 +135,7 @@ class MovieManagementIT(
     @Test
     fun `retrieve poster for movie`() {
         // Given
-        val movie = movieRepository.save(createMovie(posterId = "poster1.jpg"))
+        val movie = movieSpringRepository.save(createMovie(posterId = "poster1.jpg"))
 
         // When
         val result = testRestTemplate.exchange(
@@ -155,7 +154,7 @@ class MovieManagementIT(
     @Test
     fun `throw exception while retrieving poster for movie that does not exists`() {
         // Given
-        val movie = movieRepository.save(createMovie(posterId = "poster1.jpg"))
+        val movie = movieSpringRepository.save(createMovie(posterId = "poster1.jpg"))
         val invalidMovieId = movie.id + 1
 
         // When
