@@ -45,27 +45,27 @@ jobs:
           reporter: java-junit
           fail-on-error: true
 
-  deploy-gcp:
-    name: Deploy to GCP
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v3
-
-      - id: auth-gcp
-        name: Authenticate to GCP
-        uses: google-github-actions/auth@v1
-        with:
-          workload_identity_provider: 'projects/336669607852/locations/global/workloadIdentityPools/github-wif-pool/providers/github-wif-provider'
-          service_account: 'github-sa@cinema-tickets-hexa-workshop.iam.gserviceaccount.com'
-
-      - id: deploy
-        name: Deploy to Cloud Run
-        uses: 'google-github-actions/deploy-cloudrun@v1'
-        with:
-          project_id: "cinema-tickets-hexa-workshop"
-          region: "europe-west1"
-          service: "cinema-tickets-service"
-          source: ./
+#  deploy-gcp:
+#    name: Deploy to GCP
+#    runs-on: ubuntu-latest
+#    needs: build
+#
+#    steps:
+#      - name: Checkout sources
+#        uses: actions/checkout@v3
+#
+#      - id: auth-gcp
+#        name: Authenticate to GCP
+#        uses: google-github-actions/auth@v1
+#        with:
+#          workload_identity_provider: 'projects/336669607852/locations/global/workloadIdentityPools/github-wif-pool/providers/github-wif-provider'
+#          service_account: 'github-sa@cinema-tickets-hexa-workshop.iam.gserviceaccount.com'
+#
+#      - id: deploy
+#        name: Deploy to Cloud Run
+#        uses: 'google-github-actions/deploy-cloudrun@v1'
+#        with:
+#          project_id: "cinema-tickets-hexa-workshop"
+#          region: "europe-west1"
+#          service: "cinema-tickets-service"
+#          source: ./
